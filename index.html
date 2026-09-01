@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Fill the Veyns hiring templates and export a signature-ready PDF.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231B569A'/><text y='74' x='50' text-anchor='middle' font-size='64' font-family='sans-serif' font-weight='bold' fill='white'>V</text></svg>">
+<style>*{box-sizing:border-box}html,body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Veyns Contract Filler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ink:#101620; --ink2:#414D5D; --ink3:#6E7C8E;
+  --rule:#DBE2EB; --rule2:#EDF1F6;
+  --surface:#FFFFFF; --ground:#F3F6FA; --raise:#FAFCFE;
+  --brand:#1B569A; --brand-deep:#103A6B; --brand-soft:#E9F1FA; --sky:#A0C7E9;
+  --warn:#96580A; --warn-bg:#FCF3E2; --ok:#1C7346;
+  --display:'Sora',system-ui,sans-serif;
+  --body:'Inter',system-ui,-apple-system,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --formw:400px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#E8EEF5; --ink2:#AEBAC8; --ink3:#7A8798;
+    --rule:#26303C; --rule2:#1A222B;
+    --surface:#141B24; --ground:#0A0F15; --raise:#1A222C;
+    --brand:#79ACE2; --brand-deep:#A9CBEE; --brand-soft:#16232F;
+    --warn:#DBA24A; --warn-bg:#2A2213; --ok:#5CC48D;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E8EEF5; --ink2:#AEBAC8; --ink3:#7A8798;
+  --rule:#26303C; --rule2:#1A222B;
+  --surface:#141B24; --ground:#0A0F15; --raise:#1A222C;
+  --brand:#79ACE2; --brand-deep:#A9CBEE; --brand-soft:#16232F;
+  --warn:#DBA24A; --warn-bg:#2A2213; --ok:#5CC48D;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--ground);color:var(--ink);
+  font-family:var(--body);font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+/* ══ top bar ══ */
+.bar{
+  height:56px;display:flex;align-items:center;gap:16px;padding:0 16px;
+  background:var(--surface);border-bottom:1px solid var(--rule);position:relative;z-index:20;
+}
+.logo{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.2em;color:var(--brand);white-space:nowrap}
+.bar .spacer{flex:1}
+.docsel{display:flex;gap:2px;background:var(--ground);padding:3px;border-radius:6px;border:1px solid var(--rule)}
+.docsel button{
+  border:0;background:transparent;padding:6px 12px;border-radius:4px;cursor:pointer;
+  font-size:12.5px;font-weight:500;color:var(--ink2);white-space:nowrap;
+}
+.docsel button:hover{color:var(--brand)}
+.docsel button[aria-pressed="true"]{background:var(--surface);color:var(--brand);font-weight:600;box-shadow:0 1px 2px rgba(16,22,32,.08)}
+.btn{
+  border:1px solid var(--rule);background:var(--surface);color:var(--ink2);
+  padding:7px 13px;border-radius:5px;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;
+}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.pri:hover{background:var(--brand-deep);border-color:var(--brand-deep);color:#fff}
+
+/* ══ layout ══ */
+.main{display:flex;height:calc(100% - 56px)}
+.form{
+  width:var(--formw);flex:none;background:var(--surface);border-right:1px solid var(--rule);
+  overflow-y:auto;padding:0 0 60px;
+}
+.paper-pane{flex:1;overflow-y:auto;padding:28px;background:var(--ground);min-width:0}
+
+/* ══ form ══ */
+.grp{border-bottom:1px solid var(--rule2)}
+.grp>summary{
+  list-style:none;cursor:pointer;padding:13px 16px;display:flex;align-items:center;gap:9px;
+  font-family:var(--display);font-weight:600;font-size:13px;color:var(--ink);user-select:none;
+}
+.grp>summary::-webkit-details-marker{display:none}
+.grp>summary:hover{background:var(--raise)}
+.grp>summary .chev{width:9px;height:9px;border-right:1.8px solid var(--ink3);border-bottom:1.8px solid var(--ink3);transform:rotate(-45deg);transition:transform .15s;flex:none;margin-left:1px}
+.grp[open]>summary .chev{transform:rotate(45deg)}
+.grp>summary .cnt{
+  margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink3);
+  background:var(--ground);padding:2px 7px;border-radius:9px;font-weight:600;
+}
+.grp>summary .cnt.miss{background:var(--warn-bg);color:var(--warn)}
+.gbody{padding:2px 16px 16px}
+.f{margin-bottom:12px}
+.f label,.f .lbl{display:block;font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:4px;letter-spacing:.01em}
+.f .hint{font-size:11px;color:var(--ink3);margin-top:3px;line-height:1.4}
+.f input,.f select,.f textarea{
+  width:100%;padding:7px 9px;border:1px solid var(--rule);border-radius:4px;
+  background:var(--raise);font-size:13px;
+}
+.f input:focus,.f select:focus,.f textarea:focus{background:var(--surface)}
+.f textarea{resize:vertical;min-height:56px;line-height:1.5}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rep .row{display:flex;gap:6px;margin-bottom:6px;align-items:flex-start}
+.rep .row textarea{flex:1;min-height:38px}
+.rep .x{
+  flex:none;width:28px;height:32px;border:1px solid var(--rule);background:var(--raise);
+  border-radius:4px;cursor:pointer;color:var(--ink3);font-size:15px;line-height:1;
+}
+.rep .x:hover{color:#B0322C;border-color:#B0322C}
+.rep .add{
+  border:1px dashed var(--rule);background:transparent;color:var(--brand);
+  padding:6px 11px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:500;width:100%;
+}
+.rep .add:hover{border-color:var(--brand);background:var(--brand-soft)}
+.seg{display:flex;gap:0;border:1px solid var(--rule);border-radius:5px;overflow:hidden}
+.seg button{flex:1;border:0;background:var(--raise);padding:7px 6px;cursor:pointer;font-size:12.5px;color:var(--ink2);border-right:1px solid var(--rule)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--brand);color:#fff;font-weight:600}
+
+/* ══ paper ══ */
+.paper{
+  background:#fff;color:#15191F;max-width:8.5in;margin:0 auto;
+  padding:0.85in 0.9in;box-shadow:0 1px 3px rgba(16,22,32,.10),0 8px 28px rgba(16,22,32,.07);
+  font-size:11.2pt;line-height:1.62;border-radius:2px;
+}
+.paper *{color:inherit}
+.ph{
+  background:#FFF0C9;color:#7A5406;padding:0 3px;border-radius:2px;
+  font-weight:600;font-size:.94em;box-decoration-break:clone;-webkit-box-decoration-break:clone;
+}
+.filled{color:#1B569A;font-weight:600}
+.lh-name{font-family:var(--display);font-weight:700;font-size:15pt;letter-spacing:.2em;color:#1B569A}
+.lh-sub{font-size:7.5pt;letter-spacing:.09em;color:#6B7684;padding-bottom:7px;border-bottom:1.6px solid #1B569A;margin-top:2px}
+.d-title{font-family:var(--display);font-weight:700;font-size:15pt;letter-spacing:.06em;color:#1B569A;text-align:center;margin:26px 0 4px}
+.d-sub{text-align:center;font-size:9pt;color:#6B7684;margin-bottom:20px}
+.d-h{font-family:var(--display);font-weight:600;font-size:11pt;color:#1B569A;margin:20px 0 6px}
+.d-p{margin:0 0 9px}
+.d-p.ind{padding-left:22px}
+.d-kv{margin:0 0 4px}
+.d-note{
+  border-left:3px solid #1B569A;background:#F1F7FC;padding:10px 13px;margin:14px 0;
+  font-size:9.5pt;font-style:italic;color:#3A4757;line-height:1.5;
+}
+.d-rule{border:0;border-top:1px solid #D8DEE6;margin:20px 0}
+.d-sig{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-top:22px}
+.d-sig h4{font-size:8.5pt;letter-spacing:.1em;color:#1B569A;margin:0 0 2px;font-weight:700}
+.d-sig .ln{border-bottom:1px solid #98A3B2;height:26px;margin-top:14px}
+.d-sig .lb{font-size:7.5pt;color:#6B7684;margin-top:3px}
+.d-sig .sinfo{margin-top:20px}
+.d-sig .sinfo div{font-size:9.5pt;line-height:1.5;margin-bottom:2px}
+.d-break{page-break-before:always;break-before:page;border-top:1px dashed #C9D2DD;margin:32px 0;position:relative}
+.d-break span{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#fff;padding:0 10px;font-size:8pt;color:#9AA5B4;font-family:var(--mono)}
+.cert{text-align:center}
+.cert .big{font-family:var(--display);font-size:22pt;font-weight:700;letter-spacing:.02em;margin:14px 0;color:#15191F}
+.cert .lead{font-size:10pt;color:#5A6472;margin:0 0 8px}
+
+/* status strip */
+.status{
+  max-width:8.5in;margin:0 auto 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  font-size:12.5px;color:var(--ink2);
+}
+.status .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.status .chip{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--rule);padding:5px 11px;border-radius:20px}
+.status .chip.warn{background:var(--warn-bg);border-color:transparent;color:var(--warn);font-weight:500}
+.mobtog{display:none}
+
+@media(max-width:920px){
+  body{overflow:auto}
+  .main{flex-direction:column;height:auto}
+  .form{width:100%;border-right:0;border-bottom:1px solid var(--rule);max-height:none;overflow:visible}
+  .paper-pane{padding:16px 10px;overflow:visible}
+  .paper{padding:24px 20px;font-size:10.5pt}
+  .mobtog{display:inline-flex}
+  .docsel{overflow-x:auto}
+  body.preview-only .form{display:none}
+}
+
+/* ══ PRINT ══ */
+@page{size:letter;margin:0.7in}
+@media print{
+  html,body{height:auto;overflow:visible;background:#fff}
+  .bar,.form,.status{display:none!important}
+  .main{display:block;height:auto}
+  .paper-pane{padding:0;overflow:visible;background:#fff}
+  .paper{box-shadow:none;max-width:none;margin:0;padding:0;border-radius:0;font-size:10.5pt}
+  .ph{background:#FFF0C9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .d-note{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .d-break{border:0;margin:0}
+  .d-break span{display:none}
+  .d-h{break-after:avoid}
+  .d-sig{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="logo">VEYNS</span>
+  <div class="docsel" id="docsel" role="group" aria-label="Document"></div>
+  <span class="spacer"></span>
+  <button class="btn mobtog" id="mobtog">Preview</button>
+  <button class="btn" id="loadEx">Example</button>
+  <button class="btn" id="clearBtn">Clear person</button>
+  <button class="btn pri" id="printBtn">Save as PDF</button>
+</div>
+
+<div class="main">
+  <div class="form" id="form"></div>
+  <div class="paper-pane">
+    <div class="status" id="status"></div>
+    <div class="paper" id="paper"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════ FIELD DEFINITIONS ═══════════════════════ */
+const COMPANY_KEYS = ['coName','coAddress','coSignName','coSignTitle','coEmail','coVerifyEmail'];
+
+const GROUPS = [
+  { id:'co', label:'Veyns details', note:'Saved once. Reused on every document.', fields:[
+    {k:'coName', l:'Company legal name', v:'Veyns LLC'},
+    {k:'coAddress', l:'Registered address', t:'textarea', hint:'The Kentucky address on your LLC filing.'},
+    {k:'coSignName', l:'Who signs for Veyns'},
+    {k:'coSignTitle', l:'Their title', v:'Member', hint:'Use "Member" or "Managing Member". "Founder" has no meaning under the Kentucky LLC act, and this is the line that shows your authority to bind Veyns.'},
+    {k:'coEmail', l:'Your email'},
+    {k:'coVerifyEmail', l:'Verification email', hint:'Goes on certificates so people can confirm them.'},
+  ]},
+  { id:'p', label:'The person', fields:[
+    {k:'pName', l:'Full legal name', hint:'Exactly as spelled on their government ID.'},
+    {k:'pFirst', l:'First name / what you call them'},
+    {k:'pAddress', l:'Street address'},
+    {k:'pCity', l:'City', half:true},
+    {k:'pCountry', l:'Country', half:true},
+    {k:'pEmail', l:'Their email'},
+  ]},
+  { id:'e', label:'The engagement', fields:[
+    {k:'role', l:'Role title', hint:'Use identical wording on every document for this person.'},
+    {k:'paid', l:'Paid or unpaid', t:'seg', opts:['Unpaid','Paid'], v:'Unpaid', docs:['internship']},
+    {k:'effDate', l:'Agreement date', t:'date', half:true},
+    {k:'startDate', l:'Start date', t:'date', half:true},
+    {k:'endDate', l:'End date', t:'date', half:true},
+    {k:'hours', l:'Hours per week', half:true},
+    {k:'probationDays', l:'Probation / trial period (days)', v:'14', docs:['internship','offer'],
+     hint:'The opening stretch where either side can walk away immediately with no notice. Counts as part of the term, it does not extend it. Set to 0 to remove the clause entirely.'},
+    {k:'supName', l:'Supervisor name', docs:['internship','offer']},
+    {k:'supTitle', l:'Supervisor title', half:true, docs:['internship','offer']},
+    {k:'supEmail', l:'Supervisor email', half:true, docs:['internship','offer']},
+  ]},
+  { id:'m', label:'Money', showIf:(s,d)=> d==='contractor' || d==='offer' || (d==='internship' && s.paid==='Paid'), fields:[
+    {k:'fee', l:'Amount (USD)', half:true, hint:'Numbers only.'},
+    {k:'feePer', l:'Per', t:'select', opts:['month','deliverable','hour'], v:'month', half:true},
+    {k:'invoiceFreq', l:'Invoicing', v:'monthly in arrears', half:true},
+    {k:'netDays', l:'Payment terms (net days)', v:'14', half:true},
+    {k:'payMethod', l:'Payment method', v:'Wise'},
+  ]},
+  { id:'t', label:'Contract terms', docs:['internship','contractor'], fields:[
+    {k:'noticeDays', l:'Notice period (days)', v:'14', half:true},
+    {k:'nonSolicit', l:'Non-solicit (months)', v:'six (6)', half:true, docs:['contractor']},
+  ]},
+  { id:'sa', label:'Schedule A — learning plan', docs:['internship'], note:'This is what makes an internship an internship. Fill it properly.', fields:[
+    {k:'objectives', l:'Learning objectives', t:'rep', hint:'What they will be able to DO by the end. Not tasks you need done.'},
+    {k:'training', l:'Training and mentorship you provide', t:'rep'},
+    {k:'activities', l:'Activities they will practise', t:'rep'},
+    {k:'midReview', l:'Mid-term review date', t:'date', half:true},
+    {k:'finalReview', l:'Final review date', t:'date', half:true},
+  ]},
+  { id:'sow', label:'Schedule A — statement of work', docs:['contractor'], fields:[
+    {k:'services', l:'Services', t:'textarea', hint:'Be specific about volume and platform.'},
+    {k:'deliverables', l:'Deliverables and dates', t:'textarea'},
+    {k:'acceptance', l:'Acceptance criteria', t:'textarea', hint:'What "done" means, so you can withhold payment fairly.'},
+    {k:'scopeCap', l:'Scope or hours cap'},
+    {k:'bgIP', l:'Background IP they will reuse', v:'None'},
+    {k:'licences', l:'Third-party licences used', v:'None'},
+  ]},
+  { id:'of', label:'Offer letter', docs:['offer'], fields:[
+    {k:'engKind', l:'Engagement type', t:'select', opts:['Independent contractor','Paid intern','Unpaid intern'], v:'Independent contractor'},
+    {k:'term', l:'Term', v:'Fixed term'},
+    {k:'whatDoing', l:'What they will be doing', t:'textarea', hint:'Two or three concrete sentences. They will screenshot this.'},
+    {k:'offerDeadline', l:'Accept by', t:'date'},
+  ]},
+  { id:'ce', label:'Certificate and letter', docs:['certificate'], fields:[
+    {k:'issueDate', l:'Date of issue', t:'date', half:true},
+    {k:'certRef', l:'Reference number', half:true, hint:'e.g. VEY-INT-2026-01'},
+    {k:'basis', l:'Basis', v:'part-time, approximately 15 hours per week'},
+    {k:'certKind', l:'Engagement was', t:'select', opts:['internship','independent contractor'], v:'internship'},
+    {k:'responsibilities', l:'Responsibilities', t:'rep', hint:'Specific and verifiable. Background check firms do call.'},
+    {k:'perf', l:'Performance sentence', t:'textarea', hint:'Leave blank if you cannot say something true and positive. That is the normal, neutral version.'},
+  ]},
+];
+
+/* ═══════════════════════ DOCUMENT TEMPLATES ═══════════════════════ */
+const P = (x,o={})=>({t:'p',x,...o});
+const H = (x,o={})=>({t:'h',x,...o});
+const N = (x,o={})=>({t:'note',x,...o});
+const KV = (k,x,o={})=>({t:'kv',k,x,...o});
+
+const INTERNSHIP = [
+  {t:'lh'},
+  {t:'title',x:'INTERNSHIP AGREEMENT',sub:'Remote · International'},
+  P('This Internship Agreement (the **"Agreement"**) is made effective as of {{effDate}} (the **"Effective Date"**) between:'),
+  P('**{{coName}}**, a limited liability company organised under the laws of the Commonwealth of Kentucky, United States of America, with its registered address at {{coAddress}} (the **"Company"**); and'),
+  P('**{{pName}}**, an individual resident at {{pAddress}}, {{pCity}}, {{pCountry}} (the **"Intern"**).'),
+  P('The Company and the Intern are each a "Party" and together the "Parties".'),
+  H('1.  PURPOSE AND NATURE OF THE RELATIONSHIP'),
+  P('1.1  The Company operates a remote-first business. The Intern wishes to gain practical experience and structured mentorship in the field described in Schedule A, and the Company is willing to provide that experience on the terms set out below.'),
+  P('1.2  This Agreement creates an internship for educational and developmental purposes only. It does not create an employment relationship, a partnership, a joint venture, an agency, or an independent contractor relationship between the Parties.'),
+  P('1.3  The Intern is not an employee of the Company. The Intern is not entitled to any wage, salary, overtime, bonus, commission, equity, pension, insurance, paid leave, severance, or any other benefit that the Company provides or may provide to its employees or contractors.'),
+  P('1.4  The Intern acknowledges that the primary beneficiary of this internship is the Intern, and that the training, mentorship, feedback and portfolio work provided under Schedule A form part of the consideration the Intern receives.', {ifnot:'paid'}),
+  P('1.5  Nothing in this Agreement obliges the Company to offer, or the Intern to accept, paid employment or a paid engagement at the end of the Term.'),
+  H('2.  TERM'),
+  P('2.1  This internship begins on {{startDate}} and ends on {{endDate}} (the **"Term"**), unless ended earlier under clause 12.'),
+  P('2.2  The Term may only be extended by written agreement signed by both Parties. It does not renew automatically.'),
+  P('2.3  The Term is limited to the period during which the internship continues to provide the Intern with meaningful learning. If that ceases to be true, either Party may end this Agreement under clause 12.'),
+  P('2.4  The first {{probationDays}} days of the Term, ending on {{probationEnd}}, are an **initial review period**. Its purpose is to allow both Parties to confirm that the internship is working before either commits to the remainder of the Term.',{needs:'probationDays'}),
+  P('2.5  During the initial review period either Party may end this Agreement with immediate effect, by written notice, without observing any notice period and without being required to give reasons. Clause 12.1 does not apply during the initial review period.',{needs:'probationDays'}),
+  P('2.6  The initial review period forms part of the Term and does not extend it. If neither Party ends this Agreement during the initial review period, the internship continues on the same terms for the remainder of the Term automatically, without any further act by either Party.',{needs:'probationDays'}),
+  P('2.7  The Company may extend the initial review period once, by no more than the same number of days again, by giving the Intern written notice before the initial review period ends.',{needs:'probationDays'}),
+  P('2.8  Clauses 6, 7, 8 and 10 apply from the Effective Date and continue to apply if this Agreement is ended during the initial review period. For the avoidance of doubt, the Company owns all Work Product created during the initial review period, whether or not the internship continues beyond it.',{needs:'probationDays'}),
+  H('3.  LEARNING PROGRAMME AND ACTIVITIES'),
+  P('3.1  The learning objectives, activities, mentorship arrangements and review points for this internship are set out in Schedule A, which forms part of this Agreement.'),
+  P('3.2  The Intern’s activities are intended to complement, and not to displace, work that the Company would otherwise pay an employee or contractor to perform.'),
+  P('3.3  The Company has assigned {{supName}}, {{supTitle}}, as the Intern’s supervisor. The supervisor will provide regular guidance and written feedback at the review points listed in Schedule A.'),
+  H('4.  TIME COMMITMENT AND FLEXIBILITY'),
+  P('4.1  The expected commitment is approximately {{hours}} hours per week. The Intern is not required to work fixed shifts and may choose when within each week to carry out internship activities, subject to attending scheduled calls agreed in advance.'),
+  P('4.2  The internship is performed entirely remotely. The Intern is responsible for their own workspace, internet connection and personal equipment unless the Company expressly provides otherwise in writing.'),
+  P('4.3  The Company will accommodate the Intern’s study, examination and academic commitments where the Intern gives reasonable advance notice.'),
+  H('5.  NO COMPENSATION', {ifnot:'paid'}),
+  P('5.1  This internship is unpaid. The Intern will not receive, and expressly waives any claim to, any wage, stipend, salary or other monetary compensation for the activities carried out under this Agreement.', {ifnot:'paid'}),
+  P('5.2  The Company may, at its sole discretion and without creating any obligation or precedent, reimburse specific out-of-pocket expenses that it has approved in writing in advance. Reimbursement of an expense does not convert this internship into a paid engagement.', {ifnot:'paid'}),
+  P('5.3  If the Parties later agree that the Intern will be paid, they will sign a separate written agreement recording the new arrangement. Payment will not begin until that agreement is signed.', {ifnot:'paid'}),
+  H('5.  STIPEND', {if:'paid'}),
+  P('5.1  The Company will pay the Intern a stipend of USD {{fee}} per {{feePer}} for the duration of the Term.', {if:'paid'}),
+  P('5.2  The stipend is payable {{invoiceFreq}}, within {{netDays}} days, by {{payMethod}}. The Company bears its own sending fees. The Intern bears any receiving fee, intermediary bank fee, and any cost of converting to local currency.', {if:'paid'}),
+  P('5.3  The stipend is gross. The Intern is solely responsible for any tax or contribution arising in their country of residence. The Company makes no withholding or deduction.', {if:'paid'}),
+  P('5.4  The Company may, at its discretion, reimburse out-of-pocket expenses it has approved in writing in advance.', {if:'paid'}),
+  H('6.  CONFIDENTIALITY'),
+  P('6.1  **"Confidential Information"** means any non-public information of or relating to the Company, in any form, including product plans, source code, designs, unpublished brand assets, research, customer and user data, analytics, pricing, financials, strategy, credentials, and any information the Intern would reasonably understand to be confidential.'),
+  P('6.2  The Intern will keep all Confidential Information strictly confidential, will use it only for the purposes of this internship, and will not disclose it to any third party, publish it, or post it on any social media or public channel without the Company’s prior written consent.'),
+  P('6.3  This obligation survives the end of this Agreement indefinitely for trade secrets, and for three (3) years for all other Confidential Information.'),
+  P('6.4  Clause 6 does not apply to information that is or becomes public through no fault of the Intern, or that the Intern is legally compelled to disclose, provided the Intern notifies the Company first where lawful to do so.'),
+  H('7.  INTELLECTUAL PROPERTY'),
+  P('7.1  **"Work Product"** means everything the Intern creates, authors, designs, records, writes, captures, edits or contributes to, alone or with others, in the course of or arising from this internship, including copy, captions, graphics, video, photography, audio, illustrations, layouts, code, documentation, content calendars, strategy documents, research and data.'),
+  P('7.2  The Intern hereby irrevocably assigns to the Company, absolutely and with full title guarantee, all right, title and interest worldwide in and to the Work Product, including all copyright, database rights, design rights, trade mark rights and all other intellectual property rights, for the full term of those rights including all renewals and extensions. This assignment takes effect automatically upon creation of each item of Work Product and requires no further act by either Party.'),
+  P('7.3  To the extent any Work Product qualifies as a "work made for hire" under the copyright laws of the United States, it shall be a work made for hire and the Company shall be the author. Where any Work Product does not so qualify, clause 7.2 applies.'),
+  P('7.4  The Intern irrevocably waives, to the fullest extent permitted by law in every jurisdiction, all moral rights and rights of attribution or integrity in the Work Product, and agrees not to assert any such rights against the Company or its licensees.'),
+  P('7.5  The Intern will, at the Company’s request and cost, sign any further document and do any further act reasonably required to perfect, record or enforce the Company’s ownership of the Work Product, including after the Term has ended.'),
+  P('7.6  If the Intern incorporates into any Work Product any material the Intern owned before the Term or created outside it, the Intern grants the Company a perpetual, irrevocable, worldwide, royalty-free, sublicensable licence to use, modify and distribute that material as part of the Work Product.'),
+  P('7.7  The Company grants the Intern a limited, revocable, non-exclusive, non-transferable licence to display selected Work Product in a personal portfolio for the sole purpose of demonstrating the Intern’s skills, provided the Work Product has already been published by the Company, no Confidential Information is disclosed, and the Company is credited as the owner. The Company may withdraw this licence at any time on written notice.'),
+  H('8.  COMPANY ACCOUNTS, CREDENTIALS AND ASSETS'),
+  P('8.1  All social media accounts, handles, pages, channels, advertising accounts, business profiles, domains, email addresses, follower lists, and analytics associated with the Company or any Company brand are and remain the exclusive property of the Company, regardless of who created them or whose personal details were used to register them.'),
+  P('8.2  The Intern will not create, register or operate any account, handle, page or channel using any Company name, brand, logo or trade mark except on the Company’s written instruction, and will register any such asset in the Company’s name using a Company-controlled email address.'),
+  P('8.3  The Intern will access Company systems only through credentials issued by the Company and only through the access method the Company specifies. The Intern will not share credentials with any third party, will not store them outside the Company’s approved password manager, and will not use a personal account to administer any Company property.'),
+  P('8.4  On the earlier of the end of the Term or the Company’s request, the Intern will immediately return or irretrievably delete all Company property, Confidential Information, files, drafts, assets and credentials in the Intern’s possession, and will confirm in writing that this has been done.'),
+  P('8.5  The Intern has no authority to enter into any contract, incur any expense, make any public statement, respond to press or partnership enquiries, or otherwise bind or represent the Company, except as expressly authorised in writing.'),
+  H('9.  CONDUCT AND STANDARDS'),
+  P('9.1  The Intern will act honestly and professionally, will comply with the Company’s written policies and brand guidelines as notified from time to time, and will comply with the terms of service and advertising rules of every platform on which the Intern acts for the Company.'),
+  P('9.2  The Intern will not publish anything on behalf of the Company that is false, misleading, defamatory, discriminatory, harassing, infringing of any third-party right, or in breach of any applicable advertising or disclosure rule.'),
+  P('9.3  The Intern will not use any third-party image, music, font, video or other content on behalf of the Company without confirming the Company holds a valid licence for that use.'),
+  H('10.  DATA PROTECTION'),
+  P('10.1  The Company processes the Intern’s personal data for the purposes of administering this internship, and will do so in accordance with applicable data protection law, including the Nigeria Data Protection Act 2023 where the Intern is resident in Nigeria.'),
+  P('10.2  Where the Intern handles personal data belonging to the Company’s users, customers or audience, the Intern will do so only on the Company’s documented instructions, will apply the security measures the Company specifies, will not transfer that data to any third party or personal device, and will notify the Company without undue delay, and in any event within twenty-four (24) hours, of becoming aware of any actual or suspected personal data breach.'),
+  H('11.  INDEPENDENT STATUS AND TAX'),
+  P('11.1  The Intern is solely responsible for determining and meeting any tax, social contribution, registration or reporting obligation that arises in the Intern’s country of residence in connection with this internship. The Company makes no withholding or deduction and files no return on the Intern’s behalf.'),
+  P('11.2  The Intern confirms that they are legally permitted, under the laws of their country of residence and under the terms of any visa, study permit or other status they hold, to undertake this internship.'),
+  P('11.3  If at any time the Intern becomes entitled under the mandatory law of their country of residence to be treated as an employee or worker, the Intern will notify the Company promptly, and the Parties will negotiate in good faith to restructure or end the arrangement.'),
+  H('12.  TERMINATION'),
+  P('12.1  Subject to clause 2.5, either Party may end this Agreement at any time, for any reason or no reason, by giving {{noticeDays}} days’ written notice to the other.',{needs:'probationDays'}),
+  P('12.1  Either Party may end this Agreement at any time, for any reason or no reason, by giving {{noticeDays}} days’ written notice to the other.',{absent:'probationDays'}),
+  P('12.2  The Company may end this Agreement immediately on written notice if the Intern breaches clause 6, 7, 8 or 9, becomes unreachable for more than ten (10) consecutive days without notice, or acts in a way that in the Company’s reasonable opinion damages or is likely to damage the Company’s reputation.'),
+  P('12.3  On termination, clauses 6, 7, 8.1, 8.4, 10, 13, 14 and 15 survive.'),
+  H('13.  CERTIFICATE OF COMPLETION'),
+  P('13.1  Where the Intern completes the full Term and the Company is reasonably satisfied with the Intern’s conduct and participation, the Company will issue a written Certificate of Internship Completion recording the Intern’s name, role, the start and end dates, and a factual summary of the activities undertaken.'),
+  P('13.2  A certificate issued under clause 13.1 is a factual record only. It is not a reference, a guarantee of future employment, a representation of employment status, or a statement that any wage was paid. The Company is under no obligation to issue any additional letter, reference or statement, and will not issue any document it believes to be inaccurate.'),
+  P('13.3  Where the Intern does not complete the full Term, the Company may at its discretion issue a certificate recording the period actually served.'),
+  H('14.  GOVERNING LAW AND DISPUTES'),
+  P('14.1  This Agreement, and any dispute arising out of or in connection with it, is governed by the laws of the Commonwealth of Kentucky, United States of America, without regard to its conflict of laws rules.'),
+  P('14.2  The Parties will first attempt in good faith to resolve any dispute by discussion for a period of thirty (30) days. If that fails, the Parties submit to the exclusive jurisdiction of the state and federal courts located in the Commonwealth of Kentucky.'),
+  P('14.3  Nothing in clause 14.2 prevents the Company from seeking injunctive relief in any court of competent jurisdiction to protect its Confidential Information or intellectual property.'),
+  P('14.4  Clause 14 does not remove any right the Intern has under the mandatory law of the Intern’s country of residence that cannot be waived by agreement.'),
+  H('15.  GENERAL'),
+  P('15.1  This Agreement, together with Schedule A, is the entire agreement between the Parties on its subject matter and replaces all prior discussions, offers and understandings, whether written or oral.'),
+  P('15.2  No amendment is effective unless made in writing and signed by both Parties.'),
+  P('15.3  If any provision is held invalid or unenforceable, it shall be modified to the minimum extent necessary to make it enforceable, and the remainder of the Agreement continues in full force.'),
+  P('15.4  No failure or delay by a Party in exercising a right is a waiver of that right.'),
+  P('15.5  The Intern may not assign or subcontract this Agreement. The Company may assign it to any successor or affiliate.'),
+  P('15.6  This Agreement may be signed in counterparts and delivered electronically. The Parties agree that an electronic signature, including one applied through an electronic signature platform, is valid, binding and admissible, and each Party waives any objection to its enforceability on the sole ground that it is electronic.'),
+  P('15.7  Notices under this Agreement are validly given by email to the addresses recorded in the signature blocks below, and are deemed received on the next business day.'),
+  {t:'rule'},
+  P('The Parties have signed this Agreement on the dates written below.'),
+  {t:'sig',a:'FOR {{coName}}',b:'THE INTERN',
+   al:['Signature','Date'], ai:['{{coSignName}}, {{coSignTitle}}','{{coEmail}}'],
+   bl:['Signature','Date'], bi:['{{pName}}','{{pEmail}}']},
+  {t:'pb'},
+  {t:'lh'},
+  {t:'title',x:'SCHEDULE A',sub:'Learning Programme and Activities'},
+  H('ROLE'),
+  KV('Internship title:','{{role}}'),
+  KV('Supervisor:','{{supName}}, {{supTitle}}, {{supEmail}}'),
+  KV('Location:','Fully remote from {{pCountry}}'),
+  KV('Weekly commitment:','{{hours}} hours'),
+  KV('Dates:','{{startDate}} to {{endDate}}'),
+  KV('Initial review period:','First {{probationDays}} days, ending {{probationEnd}} (clause 2.4)',{needs:'probationDays'}),
+  H('LEARNING OBJECTIVES'),
+  P('By the end of the Term the Intern will be able to:'),
+  {t:'rep',src:'objectives',num:true},
+  H('TRAINING AND MENTORSHIP PROVIDED BY THE COMPANY'),
+  {t:'rep',src:'training'},
+  H('ACTIVITIES'),
+  P('The Intern will practise the following. Work produced is reviewed and approved by the supervisor before publication; the Intern does not publish unsupervised.'),
+  {t:'rep',src:'activities'},
+  H('REVIEW POINTS'),
+  KV('Mid-term review:','{{midReview}}'),
+  KV('Final review and certificate decision:','{{finalReview}}'),
+  {t:'sig',a:'FOR {{coName}}',b:'THE INTERN',
+   al:['Signature','Date'], ai:['{{coSignName}}, {{coSignTitle}}'],
+   bl:['Signature','Date'], bi:['{{pName}}']},
+];
+
+const CONTRACTOR = [
+  {t:'lh'},
+  {t:'title',x:'INDEPENDENT CONTRACTOR AGREEMENT',sub:'Remote · International'},
+  P('This Independent Contractor Agreement (the **"Agreement"**) is made effective as of {{effDate}} between:'),
+  P('**{{coName}}**, a limited liability company organised under the laws of the Commonwealth of Kentucky, United States of America, with its registered address at {{coAddress}} (the **"Company"**); and'),
+  P('**{{pName}}**, of {{pAddress}}, {{pCity}}, {{pCountry}} (the **"Contractor"**).'),
+  H('1.  SERVICES'),
+  P('1.1  The Contractor will provide the services described in Schedule A (the **"Services"**), and will deliver the outputs listed there (the **"Deliverables"**).'),
+  P('1.2  The Contractor will perform the Services with reasonable skill and care and to the professional standard reasonably expected of a competent provider in the Contractor’s field.'),
+  P('1.3  Schedule A may be replaced or supplemented by further written statements of work signed by both Parties. Each such statement is governed by this Agreement.'),
+  P('1.4  The Contractor will keep the Company reasonably informed of progress and will notify the Company promptly if any deadline in Schedule A is at risk.'),
+  H('2.  INDEPENDENT CONTRACTOR STATUS'),
+  P('2.1  The Contractor is an independent contractor. Nothing in this Agreement creates an employment relationship, partnership, joint venture or agency between the Parties.'),
+  P('2.2  The Contractor controls the manner, method, sequence and hours by which the Services are performed. The Company is concerned with the result, not with how the Contractor achieves it. The Company may specify deadlines, brand standards and acceptance criteria without that constituting control over the Contractor’s working methods.'),
+  P('2.3  The Contractor supplies their own equipment, software and workspace, and bears their own overheads, unless Schedule A expressly says otherwise.'),
+  P('2.4  The engagement is non-exclusive. The Contractor is free to provide services to other clients, provided doing so does not breach clause 6 or create a conflict of interest that the Contractor has not disclosed.'),
+  P('2.5  The Contractor is not entitled to any employee benefit of the Company, including insurance, pension, paid leave, sick pay, severance, bonus or equity.'),
+  P('2.6  The Contractor has no authority to bind the Company, enter into any contract on its behalf, or hold themselves out as an employee, officer or agent of the Company.'),
+  P('2.7  The Contractor may engage a subcontractor to assist with the Services only with the Company’s prior written consent. The Contractor remains fully responsible for the acts and omissions of any subcontractor and must put in place with them confidentiality and intellectual property terms at least as protective as clauses 6 and 7.'),
+  H('3.  FEES, INVOICING AND PAYMENT'),
+  P('3.1  The Company will pay the Contractor USD {{fee}} per {{feePer}}, as set out in Schedule A.'),
+  P('3.2  The Contractor will issue an invoice {{invoiceFreq}}. Each invoice must state the invoice number, invoice date, the period or Deliverables covered, the amount due, and the Contractor’s payment details.'),
+  P('3.3  The Company will pay each correctly submitted and undisputed invoice within {{netDays}} days of receipt.'),
+  P('3.4  Payment will be made in United States Dollars by {{payMethod}}. The Company bears its own sending fees. The Contractor bears any receiving fee, intermediary bank fee, and any cost of converting to local currency.'),
+  P('3.5  The Company may withhold payment for any Deliverable that materially fails to meet the acceptance criteria in Schedule A, provided it notifies the Contractor in writing within seven (7) days of delivery, specifies what is deficient, and gives the Contractor a reasonable opportunity to correct it.'),
+  P('3.6  The Contractor will be reimbursed only for expenses the Company has approved in writing in advance, on production of receipts.'),
+  H('4.  TAXES AND DOCUMENTATION'),
+  P('4.1  The fees are gross. The Contractor is solely responsible for all income tax, self-employment tax, social contributions, value added tax, business registration and any other levy arising in the Contractor’s country of residence or place of business. The Company makes no withholding or deduction unless required by law.'),
+  P('4.2  Before the first payment, the Contractor will provide the Company with a completed and signed tax certification: a current IRS Form W-8BEN if the Contractor is a non-U.S. individual; Form W-8BEN-E if the Contractor is a non-U.S. entity; or Form W-9 if the Contractor is a U.S. person.'),
+  P('4.3  The Contractor will notify the Company within thirty (30) days of any change of circumstances that makes a certification given under clause 4.2 incorrect, and will supply a replacement form.'),
+  P('4.4  The Contractor confirms that all Services are performed outside the United States, unless the Contractor notifies the Company in writing before performing any part of the Services within the United States.'),
+  P('4.5  The Contractor indemnifies the Company against any tax, penalty or interest the Company is assessed as a result of the Contractor’s failure to meet an obligation under this clause 4 or as a result of an incorrect certification given by the Contractor.'),
+  H('5.  TERM AND TERMINATION'),
+  P('5.1  This Agreement begins on the Effective Date and continues until {{endDate}}, unless ended earlier under this clause 5.'),
+  P('5.2  Either Party may terminate this Agreement for convenience on {{noticeDays}} days’ written notice.'),
+  P('5.3  Either Party may terminate immediately on written notice if the other commits a material breach that is not remedied within ten (10) days of written notice requiring it to be remedied, or becomes insolvent.'),
+  P('5.4  The Company may terminate immediately on written notice for a breach of clause 6, 7 or 8.'),
+  P('5.5  On termination, the Company will pay for Services properly performed and Deliverables accepted up to the termination date, and the Contractor will immediately deliver all work in progress, return or delete all Confidential Information and Company property, and surrender all credentials.'),
+  P('5.6  Clauses 4, 6, 7, 8, 9, 10, 11, 12 and 13 survive termination.'),
+  H('6.  CONFIDENTIALITY'),
+  P('6.1  **"Confidential Information"** means any non-public information of or relating to the Company in any form, including product plans, source code, designs, unpublished brand assets, research, customer and user data, analytics, pricing, financials, strategy and credentials, and any information the Contractor would reasonably understand to be confidential.'),
+  P('6.2  The Contractor will keep Confidential Information strictly confidential, will use it only to perform the Services, will not disclose it to any third party without the Company’s prior written consent, and will apply at least the same degree of care it applies to its own confidential information and in any event no less than reasonable care.'),
+  P('6.3  The Contractor will not disclose the existence or terms of this Agreement, or the fact of the engagement, without the Company’s prior written consent, save that the Contractor may disclose the fact of the engagement to its professional advisers and tax authorities.'),
+  P('6.4  These obligations survive indefinitely for trade secrets and for three (3) years from termination for all other Confidential Information, and do not apply to information that is public through no fault of the Contractor, was lawfully known to the Contractor before disclosure, or is legally compelled to be disclosed.'),
+  H('7.  INTELLECTUAL PROPERTY'),
+  P('7.1  **"Work Product"** means all Deliverables and all other material the Contractor creates, authors, designs, records, writes, captures, edits, develops or contributes to, alone or with others, in the course of or arising from the Services.'),
+  P('7.2  The Contractor hereby irrevocably assigns to the Company, absolutely and with full title guarantee, all right, title and interest worldwide in and to the Work Product, including all copyright, database rights, design rights, patent rights, trade mark rights and all other intellectual property rights, for the full term of those rights including all renewals, revivals and extensions. This assignment takes effect automatically upon creation of each item of Work Product.'),
+  P('7.3  To the extent any Work Product qualifies as a "work made for hire" under 17 U.S.C. § 101, it shall be a work made for hire and the Company shall be deemed the author. Where any Work Product does not so qualify, whether because it falls outside the enumerated categories or for any other reason, clause 7.2 applies and governs.'),
+  P('7.4  The Contractor irrevocably waives, to the fullest extent permitted by law in every jurisdiction, all moral rights and rights of attribution or integrity in the Work Product, and agrees not to assert any such right against the Company, its successors or its licensees.'),
+  P('7.5  The Contractor will, at the Company’s request and reasonable cost, execute any document and perform any act reasonably required to perfect, record, register or enforce the Company’s ownership of the Work Product, including after termination. The Contractor irrevocably appoints the Company as its attorney to execute such documents in the Contractor’s name if the Contractor fails to do so within fourteen (14) days of a written request.'),
+  P('7.6  **"Background IP"** means intellectual property the Contractor owned or developed independently of this Agreement. Background IP remains the Contractor’s property. Where the Contractor incorporates Background IP into any Work Product, the Contractor grants the Company a perpetual, irrevocable, worldwide, royalty-free, fully paid-up, sublicensable and transferable licence to use, copy, modify, distribute and create derivative works of that Background IP as part of or in connection with the Work Product. The Contractor will identify any Background IP in Schedule A before incorporating it.'),
+  P('7.7  The Contractor will not incorporate into any Work Product any third-party material, including stock media, fonts, music, plugins, code libraries and templates, unless the Contractor has confirmed that the Company holds or will hold a valid licence sufficient for the Company’s intended commercial use, and has identified that material and its licence terms to the Company in writing.'),
+  P('7.8  The Company grants the Contractor a limited, revocable, non-exclusive licence to display Work Product that the Company has already published in a personal portfolio, provided no Confidential Information is disclosed and the Company is credited as owner. The Company may withdraw this licence at any time on written notice.'),
+  H('8.  COMPANY ACCOUNTS, CREDENTIALS AND ASSETS'),
+  P('8.1  All social media accounts, handles, pages, channels, advertising accounts, business profiles, domains, email addresses, follower lists and analytics associated with the Company or any Company brand are and remain the exclusive property of the Company, regardless of who created or registered them.'),
+  P('8.2  The Contractor will register any such asset created for the Company in the Company’s name using a Company-controlled email address, and will grant the Company full administrative ownership immediately on creation.'),
+  P('8.3  The Contractor will access Company systems only through credentials issued by the Company and only through the access method the Company specifies, will not share credentials, and will not use a personal account to administer any Company property.'),
+  P('8.4  On termination or on request, the Contractor will immediately surrender all credentials, transfer administrative ownership of every Company asset, and return or irretrievably delete all Company property and Confidential Information, confirming in writing that this has been done.'),
+  H('9.  WARRANTIES'),
+  P('9.1  The Contractor warrants that: (a) it has full right and authority to enter into this Agreement and is not restricted by any other obligation from performing the Services; (b) the Work Product is original to the Contractor or properly licensed, and does not and will not infringe any third-party intellectual property, privacy or publicity right; (c) the Work Product contains no malicious code; (d) the Contractor will comply with all laws applicable to it in performing the Services, including applicable advertising, disclosure, consumer protection and data protection law; and (e) the Contractor has disclosed any conflict of interest.'),
+  P('9.2  The Company warrants that it has full right and authority to enter into this Agreement.'),
+  H('10.  DATA PROTECTION'),
+  P('10.1  Where the Contractor processes personal data on the Company’s behalf, the Contractor acts as a processor and will: process that data only on the Company’s documented instructions; keep it confidential; apply appropriate technical and organisational security measures; not engage a sub-processor without the Company’s prior written consent; assist the Company with data subject requests and security incidents; notify the Company without undue delay and in any event within twenty-four (24) hours of becoming aware of any actual or suspected personal data breach; and on termination return or delete all such data.'),
+  P('10.2  Each Party will comply with the data protection law applicable to it, which may include the Nigeria Data Protection Act 2023, the Digital Personal Data Protection Act 2023 of India, the EU and UK General Data Protection Regulation, and applicable United States federal and state privacy law.'),
+  H('11.  INDEMNITY AND LIABILITY'),
+  P('11.1  The Contractor will indemnify the Company against all losses, damages, costs and reasonable legal fees arising from a third-party claim that the Work Product infringes that third party’s intellectual property rights, or from the Contractor’s breach of clause 6, 7, 9 or 10.'),
+  P('11.2  Except for liability under clause 11.1, liability for breach of confidentiality, and liability that cannot lawfully be limited, neither Party is liable to the other for any indirect, incidental, special, consequential or punitive loss, or for loss of profit, revenue, data or goodwill, and each Party’s total aggregate liability under this Agreement is limited to the greater of the total fees paid in the twelve (12) months preceding the claim and USD 1,000.'),
+  H('12.  NON-SOLICITATION'),
+  P('12.1  During the Term and for {{nonSolicit}} months afterwards, the Contractor will not directly solicit any employee, contractor, client or customer of the Company with whom the Contractor had material contact during the Term, for the purpose of ending or reducing their relationship with the Company.'),
+  P('12.2  This Agreement contains no non-compete. The Contractor is free to work in the same industry and for competing businesses, subject only to clauses 6, 7 and 12.1.'),
+  H('13.  GOVERNING LAW AND DISPUTES'),
+  P('13.1  This Agreement is governed by the laws of the Commonwealth of Kentucky, United States of America, without regard to its conflict of laws rules. The United Nations Convention on Contracts for the International Sale of Goods does not apply.'),
+  P('13.2  The Parties will attempt in good faith to resolve any dispute by discussion for thirty (30) days. Failing that, the Parties submit to the exclusive jurisdiction of the state and federal courts located in the Commonwealth of Kentucky, save that the Company may seek injunctive relief in any court of competent jurisdiction to protect its Confidential Information or intellectual property.'),
+  H('14.  GENERAL'),
+  P('14.1  This Agreement together with its Schedules is the entire agreement between the Parties on its subject matter and supersedes all prior discussions and understandings. Where a Schedule conflicts with the body of this Agreement, the body prevails unless the Schedule expressly states otherwise.'),
+  P('14.2  No amendment is effective unless in writing and signed by both Parties. No purchase order, invoice term or platform term put forward by the Contractor has any effect.'),
+  P('14.3  If any provision is held invalid or unenforceable it shall be modified to the minimum extent necessary to make it enforceable, and the remainder continues in full force.'),
+  P('14.4  The Contractor may not assign this Agreement. The Company may assign it to any successor or affiliate.'),
+  P('14.5  This Agreement may be signed in counterparts and delivered electronically. The Parties agree that an electronic signature, including one applied through an electronic signature platform, is valid, binding and admissible, and each Party waives any objection to enforceability on the sole ground that a signature is electronic.'),
+  P('14.6  Notices are validly given by email to the addresses in the signature blocks below and are deemed received on the next business day.'),
+  {t:'rule'},
+  P('The Parties have signed this Agreement on the dates written below.'),
+  {t:'sig',a:'FOR {{coName}}',b:'THE CONTRACTOR',
+   al:['Signature','Date'], ai:['{{coSignName}}, {{coSignTitle}}','{{coEmail}}'],
+   bl:['Signature','Date'], bi:['{{pName}}','{{pEmail}}']},
+  {t:'pb'},
+  {t:'lh'},
+  {t:'title',x:'SCHEDULE A',sub:'Statement of Work'},
+  H('1.  SERVICES'),
+  P('{{services}}'),
+  H('2.  DELIVERABLES AND SCHEDULE'),
+  P('{{deliverables}}'),
+  H('3.  ACCEPTANCE CRITERIA'),
+  P('{{acceptance}}'),
+  H('4.  FEES'),
+  KV('Rate:','USD {{fee}} per {{feePer}}'),
+  KV('Invoicing:','{{invoiceFreq}}'),
+  KV('Payment terms:','Net {{netDays}}'),
+  KV('Payment method:','{{payMethod}}'),
+  KV('Scope cap:','{{scopeCap}}'),
+  H('5.  POINTS OF CONTACT'),
+  KV('Company:','{{coSignName}}, {{coEmail}}'),
+  KV('Contractor:','{{pName}}, {{pEmail}}'),
+  H('6.  BACKGROUND IP DECLARED UNDER CLAUSE 7.6'),
+  P('{{bgIP}}'),
+  H('7.  APPROVED THIRD-PARTY LICENCES'),
+  P('{{licences}}'),
+  {t:'sig',a:'FOR {{coName}}',b:'THE CONTRACTOR',
+   al:['Signature','Date'], ai:['{{coSignName}}, {{coSignTitle}}'],
+   bl:['Signature','Date'], bi:['{{pName}}']},
+];
+
+const OFFER = [
+  {t:'lh'},
+  P('{{effDate}}'),
+  P('**{{pName}}**'),
+  P('{{pAddress}}, {{pCity}}, {{pCountry}}'),
+  P('**Re:  Offer of engagement — {{role}}**'),
+  P('Dear {{pFirst}},'),
+  P('We are pleased to offer you the position of **{{role}}** with {{coName}}. This letter sets out the main terms of the offer. The full terms are in the agreement enclosed with this letter, which you will need to sign before you start.'),
+  H('THE ROLE'),
+  KV('Title:','{{role}}'),
+  KV('Engagement type:','{{engKind}}'),
+  KV('Reports to:','{{supName}}, {{supTitle}}'),
+  KV('Location:','Fully remote from {{pCountry}}'),
+  KV('Start date:','{{startDate}}'),
+  KV('Term:','{{term}}, ending {{endDate}}'),
+  KV('Trial period:','The first {{probationDays}} days, to {{probationEnd}}. Either of us can stop during this period with no notice.',{needs:'probationDays'}),
+  KV('Commitment:','Approximately {{hours}} hours per week'),
+  H('WHAT YOU WILL BE DOING'),
+  P('{{whatDoing}}'),
+  H('COMPENSATION'),
+  KV('Fee:','USD {{fee}} per {{feePer}}'),
+  KV('Invoicing:','You invoice us {{invoiceFreq}}'),
+  KV('Payment terms:','Net {{netDays}} from receipt of a correct invoice'),
+  KV('Payment method:','{{payMethod}}. We cover our sending fee; you cover receiving and conversion costs.'),
+  P('This is a gross fee. You are responsible for your own taxes and any registration required where you live. We do not withhold or deduct anything.'),
+  H('BEFORE YOU START'),
+  P('This offer is conditional on all of the following:'),
+  P('1.   You sign and return the enclosed agreement.',{ind:true}),
+  P('2.   You complete and return the correct tax form: IRS Form W-8BEN if you are an individual outside the United States, Form W-8BEN-E if you are a registered business outside the United States, or Form W-9 if you are a U.S. person. We cannot pay you before we have this on file.',{ind:true}),
+  P('3.   You confirm your full legal name and address exactly as they appear on your government ID, so that payments do not bounce.',{ind:true}),
+  P('4.   You confirm you are legally permitted to take this engagement where you live, including under the terms of any visa or study permit you hold.',{ind:true}),
+  P('5.   You accept our access rules: Company accounts only, credentials through our password manager, nothing administered from a personal account.',{ind:true}),
+  H('HOW TO ACCEPT'),
+  P('Sign below and return this letter together with the signed agreement by {{offerDeadline}}. An electronic signature is fine and is binding. If we have not heard from you by that date, this offer lapses.'),
+  P('We are glad you are joining us and we are looking forward to working with you.'),
+  P('Yours sincerely,'),
+  P('**{{coSignName}}**'),
+  P('{{coSignTitle}}, {{coName}}'),
+  {t:'rule'},
+  P('**ACCEPTANCE**'),
+  P('I accept the offer set out in this letter and confirm I have read and agree to the enclosed agreement.'),
+  {t:'sig',a:'CANDIDATE',b:'FOR {{coName}}',
+   al:['Signature','Date'], ai:['{{pName}}','{{pEmail}}'],
+   bl:['Signature','Date'], bi:['{{coSignName}}, {{coSignTitle}}','{{coEmail}}']},
+];
+
+const CERTIFICATE = [
+  {t:'lh'},
+  P('{{issueDate}}'),
+  P('**TO WHOM IT MAY CONCERN**'),
+  P('This is to certify that **{{pName}}** was engaged by {{coName}} as **{{role}}** from {{startDate}} to {{endDate}}.'),
+  P('The engagement was carried out remotely from {{pCountry}} on a {{basis}} basis, on the terms of a written {{certKind}} agreement.'),
+  P('During this period, their responsibilities included:'),
+  {t:'rep',src:'responsibilities'},
+  P('{{perf}}',{opt:true}),
+  P('We wish {{pFirst}} every success in their future endeavours. If you require confirmation of anything in this letter, please contact us at {{coVerifyEmail}}.'),
+  P('Yours faithfully,'),
+  {t:'sigline'},
+  P('**{{coSignName}}**'),
+  P('{{coSignTitle}}, {{coName}}'),
+  P('{{coEmail}}  ·  Kentucky, United States'),
+  N('Keep every statement factual and checkable, because visa officers and background-check firms do call. Never describe an intern or contractor as an "employee" and never state a salary that was not paid. If you cannot write something true and positive, leave the performance sentence blank and issue the neutral version.'),
+  {t:'pb'},
+  {t:'cert'},
+];
+
+const DOCS = {
+  internship:{name:'Internship Agreement', blocks:INTERNSHIP},
+  contractor:{name:'Contractor Agreement', blocks:CONTRACTOR},
+  offer:{name:'Offer Letter', blocks:OFFER},
+  certificate:{name:'Experience Letter', blocks:CERTIFICATE},
+};
+
+const LABELS = {};
+GROUPS.forEach(g=>g.fields.forEach(f=>LABELS[f.k]=f.l));
+Object.assign(LABELS,{effDate:'Agreement date',endDate:'End date',startDate:'Start date'});
+
+/* ═══════════════════════ STATE ═══════════════════════ */
+const LS='veyns_filler_v1';
+let doc='internship';
+let S={};
+
+function defaults(){
+  const o={};
+  GROUPS.forEach(g=>g.fields.forEach(f=>{ o[f.k] = f.t==='rep' ? [] : (f.v||''); }));
+  return o;
+}
+function load(){
+  S=defaults();
+  try{
+    const raw=localStorage.getItem(LS);
+    if(raw){ const j=JSON.parse(raw); Object.assign(S,j.data||{}); if(j.doc)doc=j.doc; }
+  }catch(e){}
+}
+function save(){
+  try{ localStorage.setItem(LS,JSON.stringify({doc,data:S})); }catch(e){}
+}
+
+/* ═══════════════════════ RENDER: FORM ═══════════════════════ */
+const esc = s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function visibleGroups(){
+  return GROUPS.filter(g=>{
+    if(g.showIf) return g.showIf(S,doc);
+    if(g.docs && !g.docs.includes(doc)) return false;
+    return true;
+  });
+}
+function visibleFields(g){
+  return g.fields.filter(f=> !f.docs || f.docs.includes(doc));
+}
+
+function buildForm(){
+  const openState={};
+  document.querySelectorAll('.grp').forEach(d=>openState[d.dataset.id]=d.open);
+  let h='';
+  visibleGroups().forEach((g,gi)=>{
+    const fs=visibleFields(g);
+    const missing=fs.filter(f=>{
+      const v=S[f.k];
+      return f.t==='rep' ? (!v||!v.length||!v.some(x=>x&&x.trim())) : !String(v||'').trim();
+    }).length;
+    const open = openState[g.id] !== undefined ? openState[g.id] : true;
+    h+=`<details class="grp" data-id="${g.id}"${open?' open':''}>
+      <summary><span class="chev"></span>${esc(g.label)}
+        <span class="cnt${missing?' miss':''}">${missing? missing+' left':'done'}</span></summary>
+      <div class="gbody">`;
+    if(g.note) h+=`<div class="f"><div class="hint" style="margin-top:0;margin-bottom:10px">${esc(g.note)}</div></div>`;
+    let i=0;
+    while(i<fs.length){
+      const f=fs[i];
+      if(f.half && fs[i+1] && fs[i+1].half){
+        h+=`<div class="f2">${fieldHTML(f)}${fieldHTML(fs[i+1])}</div>`; i+=2;
+      } else { h+=fieldHTML(f); i++; }
+    }
+    h+='</div></details>';
+  });
+  document.getElementById('form').innerHTML=h;
+}
+
+function fieldHTML(f){
+  const v=S[f.k];
+  let inner='';
+  if(f.t==='rep'){
+    const arr=(v&&v.length)?v:[''];
+    inner=`<div class="rep" data-k="${f.k}">`
+      + arr.map((x,i)=>`<div class="row"><textarea data-rep="${f.k}" data-i="${i}" rows="2" placeholder="Line ${i+1}">${esc(x)}</textarea><button class="x" data-del="${f.k}" data-i="${i}" title="Remove" aria-label="Remove line ${i+1}">&times;</button></div>`).join('')
+      + `<button class="add" data-add="${f.k}">+ Add line</button></div>`;
+  } else if(f.t==='textarea'){
+    inner=`<textarea id="fld_${f.k}" data-k="${f.k}" rows="3">${esc(v)}</textarea>`;
+  } else if(f.t==='select'){
+    inner=`<select id="fld_${f.k}" data-k="${f.k}">${f.opts.map(o=>`<option${o===v?' selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  } else if(f.t==='seg'){
+    inner=`<div class="seg" role="group" aria-label="${esc(f.l)}">${f.opts.map(o=>`<button type="button" data-seg="${f.k}" data-v="${esc(o)}" aria-pressed="${o===v}">${esc(o)}</button>`).join('')}</div>`;
+  } else if(f.t==='date'){
+    inner=`<input id="fld_${f.k}" type="date" data-k="${f.k}" value="${esc(v)}">`;
+  } else {
+    inner=`<input id="fld_${f.k}" type="text" data-k="${f.k}" value="${esc(v)}">`;
+  }
+  const lab = (f.t==='rep'||f.t==='seg') ? `<span class="lbl">${esc(f.l)}</span>` : `<label for="fld_${f.k}">${esc(f.l)}</label>`;
+  return `<div class="f">${lab}${inner}${f.hint?`<div class="hint">${esc(f.hint)}</div>`:''}</div>`;
+}
+
+/* ═══════════════════════ RENDER: PAPER ═══════════════════════ */
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function fmtDate(v){
+  if(!v) return '';
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  if(!m) return v;
+  return `${+m[3]} ${MONTHS[+m[2]-1]} ${m[1]}`;
+}
+const DATE_KEYS=new Set(['effDate','startDate','endDate','midReview','finalReview','offerDeadline','issueDate']);
+
+let missingCount=0;
+
+// Values derived from other fields rather than typed directly.
+function computed(k){
+  if(k!=='probationEnd') return undefined;
+  const start=S.startDate, days=parseInt(S.probationDays,10);
+  if(!start || !days || isNaN(days) || days<1) return null;
+  const dt=new Date(start+'T00:00:00');
+  if(isNaN(dt.getTime())) return null;
+  dt.setDate(dt.getDate()+days-1);   // day 1 is the start date itself
+  const pad=n=>String(n).padStart(2,'0');
+  return fmtDate(`${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`);
+}
+
+function val(k){
+  const c=computed(k);
+  if(c!==undefined) return c;
+  let v=S[k];
+  if(DATE_KEYS.has(k)) v=fmtDate(v);
+  if(v===undefined||v===null||String(v).trim()==='') return null;
+  return String(v);
+}
+function fill(str,opt){
+  return String(str).replace(/\{\{(\w+)\}\}/g,(_,k)=>{
+    const v=val(k);
+    if(v===null){
+      if(opt) return '';
+      missingCount++;
+      return `<span class="ph">[${esc((LABELS[k]||k).toUpperCase())}]</span>`;
+    }
+    // Short values (names, dates, amounts) get the blue "you typed this" treatment.
+    // Long prose blocks read as body text, so leave them plain.
+    return v.length > 80 ? esc(v) : `<span class="filled">${esc(v)}</span>`;
+  }).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+}
+
+function isSet(k){ const v=String(S[k]==null?'':S[k]).trim(); return v!=='' && v!=='0'; }
+function show(b){
+  if(b.if && S[b.if]!=='Paid') return false;
+  if(b.ifnot && S[b.ifnot]==='Paid') return false;
+  if(b.needs && !isSet(b.needs)) return false;   // hide unless the field has a real value
+  if(b.absent && isSet(b.absent)) return false;  // hide once the field has a real value
+  return true;
+}
+
+function buildPaper(){
+  missingCount=0;
+  const blocks=DOCS[doc].blocks;
+  let h='';
+  blocks.forEach(b=>{
+    if(!show(b)) return;
+    switch(b.t){
+      case 'lh':
+        h+=`<div><div class="lh-name">VEYNS</div><div class="lh-sub">${fill('{{coName}}',true)||'Veyns LLC'} &nbsp;·&nbsp; Kentucky, United States &nbsp;·&nbsp; Remote</div></div>`;
+        break;
+      case 'title':
+        h+=`<div class="d-title">${esc(b.x)}</div>`;
+        if(b.sub) h+=`<div class="d-sub">${esc(b.sub)}</div>`;
+        break;
+      case 'h': h+=`<div class="d-h">${esc(b.x)}</div>`; break;
+      case 'p': {
+        const txt=fill(b.x,b.opt);
+        if(b.opt && !txt.trim()) break;
+        h+=`<p class="d-p${b.ind?' ind':''}">${txt}</p>`; break;
+      }
+      case 'kv': h+=`<p class="d-kv"><strong>${esc(b.k)}</strong>  ${fill(b.x)}</p>`; break;
+      case 'note': h+=`<div class="d-note">${esc(b.x)}</div>`; break;
+      case 'rule': h+=`<hr class="d-rule">`; break;
+      case 'pb': h+=`<div class="d-break"><span>PAGE BREAK</span></div>`; break;
+      case 'sigline': h+=`<div style="height:44px"></div><div style="border-bottom:1px solid #98A3B2;width:230px"></div>`; break;
+      case 'rep': {
+        const arr=(S[b.src]||[]).filter(x=>x&&x.trim());
+        if(!arr.length){ missingCount++; h+=`<p class="d-p ind"><span class="ph">[${esc((LABELS[b.src]||b.src).toUpperCase())} — ADD AT LEAST ONE LINE]</span></p>`; break; }
+        h+=arr.map((x,i)=>`<p class="d-p ind">${b.num?(i+1)+'.&nbsp;&nbsp; ':'·&nbsp;&nbsp; '}${esc(x)}</p>`).join('');
+        break;
+      }
+      case 'sig': {
+        // `al`/`bl` are things the signer fills in: a rule with its label underneath.
+        // `ai`/`bi` are already-known details printed below, with no rule to write on.
+        const col=(head,lines,info)=>{
+          const rules=(lines||[]).map(l=>`<div class="ln"></div><div class="lb">${esc(l)}</div>`).join('');
+          const printed=(info||[]).map(x=>fill(x,true)).filter(v=>v.trim());
+          return `<div><h4>${fill(head)}</h4>${rules}`
+            + (printed.length ? `<div class="sinfo">${printed.map(v=>`<div>${v}</div>`).join('')}</div>` : '')
+            + `</div>`;
+        };
+        h+=`<div class="d-sig">${col(b.a,b.al,b.ai)}${col(b.b,b.bl,b.bi)}</div>`;
+        break;
+      }
+      case 'cert':
+        h+=`<div class="cert">
+          <div class="lh-name" style="font-size:22pt;letter-spacing:.24em">VEYNS</div>
+          <div style="font-size:8pt;letter-spacing:.1em;color:#6B7684;margin:4px 0 46px">${fill('{{coName}}',true)||'Veyns LLC'} · Kentucky, United States</div>
+          <div class="d-title" style="margin-top:0">CERTIFICATE OF INTERNSHIP COMPLETION</div>
+          <p class="lead" style="margin-top:26px">This certifies that</p>
+          <div class="big">${fill('{{pName}}')}</div>
+          <p class="lead">has satisfactorily completed an internship with ${fill('{{coName}}',true)||'Veyns LLC'} as</p>
+          <div style="font-family:var(--display);font-weight:600;font-size:14pt;color:#1B569A;margin:6px 0 14px">${fill('{{role}}')}</div>
+          <p class="lead">from ${fill('{{startDate}}')} to ${fill('{{endDate}}')}, undertaken remotely.</p>
+          <div class="d-sig" style="margin-top:56px;text-align:left">
+            <div><div class="ln"></div><div class="lb">${fill('{{coSignName}}, {{coSignTitle}}',true)||'Name, title'} · ${fill('{{coName}}',true)||'Veyns LLC'}</div></div>
+            <div><div class="ln"></div><div class="lb">Date of issue</div></div>
+          </div>
+          <p style="font-size:8pt;color:#6B7684;margin-top:34px">Certificate reference: ${fill('{{certRef}}',true)||'—'} &nbsp;&nbsp; Verify at: ${fill('{{coVerifyEmail}}',true)||'—'}</p>
+        </div>`;
+        break;
+    }
+  });
+  document.getElementById('paper').innerHTML=h;
+
+  const st=document.getElementById('status');
+  st.innerHTML = missingCount
+    ? `<span class="chip warn">${missingCount} placeholder${missingCount>1?'s':''} still to fill</span><span class="chip">Highlighted in yellow below</span>`
+    : `<span class="chip" style="color:var(--ok)"><span class="dot" style="background:var(--ok)"></span>Complete. Save as PDF, then send for signature.</span>`;
+}
+
+/* ═══════════════════════ WIRING ═══════════════════════ */
+function render(){ buildForm(); buildPaper(); save(); }
+function renderPaperOnly(){ buildPaper(); save(); }
+
+document.getElementById('form').addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.rep!==undefined){
+    const k=t.dataset.rep, i=+t.dataset.i;
+    if(!Array.isArray(S[k])) S[k]=[];
+    S[k][i]=t.value;
+    renderPaperOnly(); return;
+  }
+  if(t.dataset.k){ S[t.dataset.k]=t.value; renderPaperOnly(); updateCounts(); }
+});
+document.getElementById('form').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.tagName==='SELECT'&&t.dataset.k){ S[t.dataset.k]=t.value; renderPaperOnly(); updateCounts(); }
+});
+document.getElementById('form').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.add!==undefined){
+    const k=b.dataset.add; if(!Array.isArray(S[k]))S[k]=[]; S[k].push(''); render();
+    const rows=document.querySelectorAll(`[data-rep="${k}"]`); if(rows.length) rows[rows.length-1].focus();
+  }
+  if(b.dataset.del!==undefined){
+    const k=b.dataset.del,i=+b.dataset.i;
+    if(Array.isArray(S[k])){ S[k].splice(i,1); render(); }
+  }
+  if(b.dataset.seg!==undefined){ S[b.dataset.seg]=b.dataset.v; render(); }
+});
+
+function updateCounts(){
+  document.querySelectorAll('.grp').forEach(d=>{
+    const g=GROUPS.find(x=>x.id===d.dataset.id); if(!g) return;
+    const fs=visibleFields(g);
+    const missing=fs.filter(f=>{
+      const v=S[f.k];
+      return f.t==='rep' ? (!v||!v.length||!v.some(x=>x&&x.trim())) : !String(v||'').trim();
+    }).length;
+    const c=d.querySelector('.cnt');
+    c.textContent = missing? missing+' left':'done';
+    c.classList.toggle('miss',!!missing);
+  });
+}
+
+const sel=document.getElementById('docsel');
+sel.innerHTML=Object.entries(DOCS).map(([k,v])=>`<button data-doc="${k}" aria-pressed="${k===doc}">${esc(v.name)}</button>`).join('');
+sel.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-doc]'); if(!b) return;
+  doc=b.dataset.doc;
+  sel.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.doc===doc));
+  render();
+  document.querySelector('.paper-pane').scrollTop=0;
+});
+
+document.getElementById('printBtn').addEventListener('click',()=>window.print());
+
+document.getElementById('clearBtn').addEventListener('click',()=>{
+  if(!confirm('Clear this person’s details? Your Veyns details are kept.')) return;
+  const keep={}; COMPANY_KEYS.forEach(k=>keep[k]=S[k]);
+  S=Object.assign(defaults(),keep);
+  render();
+});
+
+document.getElementById('loadEx').addEventListener('click',()=>{
+  Object.assign(S,{
+    coName:'Veyns LLC', coAddress:'1234 Example Street, Suite 100, Louisville, KY 40202',
+    coSignName:'Krishna Aggarwal', coSignTitle:'Member',
+    coEmail:'krishna@veyns.com', coVerifyEmail:'verify@veyns.com',
+    pName:'Chidinma Adaeze Okafor', pFirst:'Chidinma',
+    pAddress:'12 Awolowo Road, Ikoyi', pCity:'Lagos', pCountry:'Nigeria',
+    pEmail:'chidinma.okafor@example.com',
+    role:'Social Media Marketing Intern', paid:'Unpaid',
+    effDate:'2026-09-05', startDate:'2026-09-08', endDate:'2026-12-08', hours:'12', probationDays:'14',
+    supName:'Krishna Aggarwal', supTitle:'Founder', supEmail:'krishna@veyns.com',
+    noticeDays:'seven (7)', nonSolicit:'six (6)',
+    fee:'220', feePer:'month', invoiceFreq:'monthly in arrears', netDays:'14', payMethod:'Wise',
+    midReview:'2026-10-20', finalReview:'2026-12-05',
+    objectives:[
+      'Plan a monthly content calendar across three platforms from a brand brief.',
+      'Write platform-native copy that follows a documented brand voice.',
+      'Read platform analytics and explain what a change in reach or saves means.',
+      'Brief and review a short-form video edit against a creative brief.',
+    ],
+    training:[
+      'Weekly one-to-one call with the supervisor, Tuesdays at 14:00 WAT, 30 minutes.',
+      'Written feedback on submitted work within two working days.',
+      'Access to the Veyns brand guidelines, content templates and tooling.',
+    ],
+    activities:[
+      'Drafting captions and carousels for review before publication.',
+      'Building the monthly content calendar in Notion.',
+      'Compiling a monthly performance summary.',
+    ],
+    services:'Manage the Veyns Instagram, X and LinkedIn accounts, comprising twelve (12) static posts, eight (8) short-form videos and twenty (20) stories per calendar month, plus community management responses within twenty-four (24) hours on business days.',
+    deliverables:'Monthly content calendar delivered by the 25th of the preceding month. Monthly performance report delivered by the 5th of the following month.',
+    acceptance:'Content follows the Veyns brand guidelines, contains no factual claim about a Veyns product that has not been approved in writing, and is delivered in the agreed file formats.',
+    scopeCap:'Up to 40 hours per month; additional hours by prior written approval only.',
+    bgIP:'None', licences:'None',
+    engKind:'Unpaid intern', term:'Fixed term',
+    whatDoing:'You will own the day-to-day running of the Veyns social accounts under supervision: planning the monthly calendar, drafting copy and briefs, and reporting on what worked. You will not publish unsupervised; everything is reviewed before it goes out.',
+    offerDeadline:'2026-09-06',
+    issueDate:'2026-12-10', certRef:'VEY-INT-2026-01',
+    basis:'part-time, approximately 12 hours per week', certKind:'internship',
+    responsibilities:[
+      'Planning and scheduling the monthly content calendar across Instagram, X and LinkedIn.',
+      'Writing platform-native copy in line with the Veyns brand guidelines.',
+      'Producing a monthly performance report covering reach, engagement rate and follower growth.',
+    ],
+    perf:'Throughout the internship she was reliable, communicated clearly across time zones, and consistently met agreed deadlines.',
+  });
+  render();
+});
+
+const mt=document.getElementById('mobtog');
+mt.addEventListener('click',()=>{
+  document.body.classList.toggle('preview-only');
+  mt.textContent = document.body.classList.contains('preview-only') ? 'Edit' : 'Preview';
+});
+
+load();
+sel.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.doc===doc));
+render();
+</script>
+</body>
+</html>
