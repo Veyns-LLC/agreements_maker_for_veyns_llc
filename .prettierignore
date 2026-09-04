@@ -1,0 +1,3 @@
+# Hand-authored, deliberately compact single-file app.
+# Prettier expands it to ~2x the lines and buries real diffs.
+index.html
