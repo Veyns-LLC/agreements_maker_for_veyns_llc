@@ -67,6 +67,7 @@ button,input,select,textarea{font:inherit;color:inherit}
   padding:7px 13px;border-radius:5px;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;
 }
 .btn:hover{border-color:var(--brand);color:var(--brand)}
+select.btn{padding-right:7px;max-width:210px}
 .btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
 .btn.pri:hover{background:var(--brand-deep);border-color:var(--brand-deep);color:#fff}
 
@@ -202,7 +203,11 @@ button,input,select,textarea{font:inherit;color:inherit}
   <div class="docsel" id="docsel" role="group" aria-label="Document"></div>
   <span class="spacer"></span>
   <button class="btn mobtog" id="mobtog">Preview</button>
-  <button class="btn" id="loadEx">Example</button>
+  <select class="btn" id="loadEx" aria-label="Load a preset">
+    <option value="">Load preset…</option>
+    <option value="basic">Unpaid intern — full demo</option>
+    <option value="influencer">Influencer marketing intern — incentive</option>
+  </select>
   <button class="btn" id="clearBtn">Clear person</button>
   <button class="btn pri" id="printBtn">Save as PDF</button>
 </div>
@@ -238,7 +243,8 @@ const GROUPS = [
   ]},
   { id:'e', label:'The engagement', fields:[
     {k:'role', l:'Role title', hint:'Use identical wording on every document for this person.'},
-    {k:'paid', l:'Paid or unpaid', t:'seg', opts:['Unpaid','Paid'], v:'Unpaid', docs:['internship']},
+    {k:'paid', l:'Compensation model', t:'seg', opts:['Unpaid','Stipend','Incentive'], v:'Unpaid', docs:['internship'],
+     hint:'"Incentive" is a base stipend plus the performance incentive set out in Schedule B.'},
     {k:'effDate', l:'Agreement date', t:'date', half:true},
     {k:'startDate', l:'Start date', t:'date', half:true},
     {k:'endDate', l:'End date', t:'date', half:true},
@@ -249,12 +255,37 @@ const GROUPS = [
     {k:'supTitle', l:'Supervisor title', half:true, docs:['internship','offer']},
     {k:'supEmail', l:'Supervisor email', half:true, docs:['internship','offer']},
   ]},
-  { id:'m', label:'Money', showIf:(s,d)=> d==='contractor' || d==='offer' || (d==='internship' && s.paid==='Paid'), fields:[
-    {k:'fee', l:'Amount (USD)', half:true, hint:'Numbers only.'},
-    {k:'feePer', l:'Per', t:'select', opts:['month','deliverable','hour'], v:'month', half:true},
-    {k:'invoiceFreq', l:'Invoicing', v:'monthly in arrears', half:true},
+  { id:'m', label:'Money', showIf:(s,d)=> d==='contractor' || d==='offer' || (d==='internship' && s.paid!=='Unpaid'), fields:[
+    {k:'currency', l:'Currency', t:'select', opts:['USD','INR','GBP','EUR','NGN'], v:'USD', half:true},
+    {k:'fee', l:'Amount', half:true, hint:'Numbers only.'},
+    {k:'invoiceFreq', l:'Invoicing', v:'monthly in arrears', half:true,
+     showIf:(s,d)=> !(d==='internship' && s.paid==='Incentive')},   // incentive pay runs on a monthly cycle, not invoices
     {k:'netDays', l:'Payment terms (net days)', v:'14', half:true},
+    {k:'feePer', l:'Per', t:'select', opts:['month','deliverable','hour'], v:'month'},
     {k:'payMethod', l:'Payment method', v:'Wise'},
+    {k:'probPay', l:'Pay during the initial review period', t:'seg', opts:['Pro-rated','Unpaid'], v:'Pro-rated', docs:['internship'],
+     hint:'Pick "Unpaid" only where the review period is genuinely orientation with no revenue-generating work. If they are doing the real job, pay it.'},
+  ]},
+  { id:'inc', label:'Schedule B — incentive plan', showIf:(s,d)=> d==='internship' && s.paid==='Incentive',
+    note:'Drives clause 5 and the whole of Schedule B. Amounts are in the currency chosen under Money.', fields:[
+    {k:'incAffiliate', l:'Per approved affiliate', half:true},
+    {k:'incUser', l:'Per new user via an affiliate', half:true},
+    {k:'minFollowers', l:'Minimum follower count (optional)', half:true,
+     hint:'Leave blank to keep approval qualitative — the clause then rules out accounts too small to deliver reach, without naming a number you have to defend.'},
+    {k:'affTarget', l:'Affiliates expected per month', half:true},
+    {k:'approvalDays', l:'Your approval turnaround (days)', v:'five (5)', half:true},
+    {k:'tailDays', l:'Post-term attribution window (days)', v:'0', half:true,
+     hint:'Days after the term ends during which users from their affiliates still count. 0 gives a clean cut-off.'},
+    {k:'userTrigger', l:'A user counts once they', t:'select',
+     opts:['complete their first paid purchase',
+           'complete their first paid purchase or start a paid subscription',
+           'complete registration and verify their account',
+           'complete registration'],
+     v:'complete their first paid purchase'},
+    {k:'incStart', l:'Incentive starts accruing', t:'date', half:true},
+    {k:'payDay', l:'Monthly payout day', v:'first working day', half:true},
+    {k:'incCap', l:'Monthly incentive cap', v:'No cap', hint:'Write "No cap" if there is none. Worth setting one before the numbers scale.'},
+    {k:'incNoticeDays', l:'Notice to change the rates (days)', v:'thirty (30)', hint:'Clear this field to drop the rate-change clause entirely.'},
   ]},
   { id:'t', label:'Contract terms', docs:['internship','contractor'], fields:[
     {k:'noticeDays', l:'Notice period (days)', v:'14', half:true},
@@ -297,6 +328,81 @@ const H = (x,o={})=>({t:'h',x,...o});
 const N = (x,o={})=>({t:'note',x,...o});
 const KV = (k,x,o={})=>({t:'kv',k,x,...o});
 
+// True only when there is a real review period AND it is going unpaid.
+const unpaidProb = s => s.probPay==='Unpaid'
+  && String(s.probationDays==null?'':s.probationDays).trim() !== ''
+  && String(s.probationDays).trim() !== '0';
+
+/* Schedule B only ever appears on an incentive-model internship, so every block
+   carries pay:'incentive' rather than repeating the flag by hand. */
+const SCHEDULE_B = [
+  {t:'pb'},
+  {t:'lh'},
+  {t:'title',x:'SCHEDULE B',sub:'Performance Incentive Plan'},
+  P('This Schedule forms part of the Agreement and sets out how the Intern’s performance incentive is earned, verified and paid. Where it conflicts with clause 5, this Schedule prevails.'),
+  H('1.  DEFINITIONS'),
+  P('1.1  **"Affiliate"** means a person who joins the Company’s affiliate programme following an introduction by the Intern, and who is registered under a referral code or tracked link attributed to the Intern in the Company’s tracking system.'),
+  P('1.2  **"Qualifying Affiliate"** means an Affiliate who has done all of the following: (a) completed sign-up to the Company’s affiliate programme; (b) created and published at least one piece of promotional content featuring the Company on their own Instagram account, meeting the Company’s brand guidelines and the disclosure requirement in clause 9.4; and (c) been approved by the Company under paragraph 2.'),
+  // Two variants so the closing sentence never contradicts a sign-up-only trigger.
+  P('1.3  **"Qualifying User"** means a person who registers as a new user of the Company’s product through a Qualifying Affiliate’s tracked link or referral code, who has not previously held an account with the Company, and who is recorded as a valid new user in the Company’s tracking system. A person becomes a Qualifying User only once they {{userTrigger}}; registering or signing up alone is not enough.',
+    {when:s=>/paid/.test(s.userTrigger||'')}),
+  P('1.3  **"Qualifying User"** means a person who registers as a new user of the Company’s product through a Qualifying Affiliate’s tracked link or referral code, who has not previously held an account with the Company, and who is recorded as a valid new user in the Company’s tracking system. A person becomes a Qualifying User once they {{userTrigger}}.',
+    {when:s=>!/paid/.test(s.userTrigger||'')}),
+  P('1.4  **"Incentive Month"** means a calendar month, or so much of a calendar month as falls within the Term.'),
+  H('2.  APPROVAL OF AFFILIATES'),
+  P('2.1  The Intern submits each prospective Affiliate to the supervisor for approval before onboarding them. Approval is at the Company’s discretion, exercised reasonably and in good faith.'),
+  P('2.2  The Company will normally approve a prospective Affiliate who holds a public Instagram account with at least {{minFollowers}} followers, whose audience appears genuine and relevant to the Company’s market, and whose content is consistent with the Company’s brand and with applicable advertising rules.', {needs:'minFollowers'}),
+  P('2.2  The Company will normally approve a prospective Affiliate whose audience appears genuine, engaged and relevant to the Company’s market, and whose content is consistent with the Company’s brand and with applicable advertising rules. Follower count alone is not the test, but the Company will not approve an account whose following is too small or too inactive to deliver meaningful reach for the Company.', {absent:'minFollowers'}),
+  P('2.3  The Company will confirm approval or refusal in writing within {{approvalDays}} days of submission, with a short reason for any refusal. A prospective Affiliate who is refused may be resubmitted once the reason for refusal has been addressed.'),
+  P('2.4  The Company may refuse or revoke approval where the account’s following appears purchased or inauthentic, where engagement is inconsistent with the follower count, where the account’s content conflicts with the Company’s brand, or where the Affiliate’s conduct would in the Company’s reasonable opinion damage the Company’s reputation. Revocation does not affect an affiliate incentive already earned, except where paragraph 5 applies.'),
+  H('3.  AFFILIATE INCENTIVE'),
+  P('3.1  The Company will pay the Intern {{currency}} {{incAffiliate}} for each Qualifying Affiliate. This amount is payable once only in respect of any one person.'),
+  P('3.2  The affiliate incentive is earned at the moment the Affiliate becomes a Qualifying Affiliate, that is, on the Company’s approval following that Affiliate’s sign-up and first published piece of content.'),
+  P('3.3  If a Qualifying Affiliate afterwards reduces, pauses or stops promoting the Company, for any reason and whether by their own choice or otherwise, the Intern keeps in full the affiliate incentive already earned for that Affiliate. The Company will not withhold, reverse, reduce or reclaim it on that ground. The Company has received the content, and the decision to stop promoting is the Affiliate’s.'),
+  P('3.4  No affiliate incentive is payable in respect of a person who was already registered with the Company’s affiliate programme, or already in discussion with the Company about joining it, before the Intern’s introduction; nor for the same person joining again after leaving; nor for a person introduced after the end of the Term.'),
+  H('4.  USER INCENTIVE'),
+  P('4.1  The Company will pay the Intern {{currency}} {{incUser}} for each Qualifying User.'),
+  P('4.2  The user incentive is a one-time payment for each Qualifying User. It does not recur. No further amount is payable in respect of that user’s later activity, purchases, subscription renewals, referrals or lifetime value.'),
+  P('4.3  The user incentive is payable only for users attributed to a Qualifying Affiliate. A user who reaches the Company through the Company’s own channels, its paid advertising, its organic content, or any route other than a Qualifying Affiliate’s tracked link or referral code does not qualify.'),
+  P('4.4  A person whose payment is afterwards refunded, reversed or charged back, or who cancels within any refund or cooling-off period the Company offers, is not a Qualifying User. Where the incentive for that person has already been paid, paragraph 5.2 applies.'),
+  P('4.5  Where the Company’s tracking system attributes a user to more than one source, the attribution recorded by that system governs.'),
+  H('5.  EXCLUSIONS, INTEGRITY AND ADJUSTMENT'),
+  P('5.1  No incentive is earned in respect of: an account belonging to the Intern; an account belonging to a member of the Intern’s immediate family or household; a duplicate, fake, automated or bot account; a sign-up obtained by paying, rewarding or misleading the person signing up; or any registration the Company reasonably determines to be fraudulent or artificially generated.'),
+  P('5.2  If an incentive has been paid and the Company afterwards establishes on reasonable grounds that the underlying Affiliate or User did not qualify, the Company may set the amount off against the next payment due to the Intern or, where no further payment is due, require repayment within thirty (30) days of written notice. The Company will give the Intern the reason and the supporting records, and the Intern may respond before the adjustment is made.'),
+  P('5.3  Deliberately inflating incentive figures, including by creating or procuring accounts that do not represent genuine affiliates or users, is a material breach. The Company may end this Agreement immediately under clause 12.2 and withhold all unpaid incentive.'),
+  H('6.  RECORDS, STATEMENTS AND QUERIES'),
+  P('6.1  The Company’s affiliate tracking system is the record of Qualifying Affiliates and Qualifying Users. The Company will give the Intern access to that system, or a monthly extract from it, so that the Intern can see the figures on which payment is based.'),
+  P('6.2  With each monthly payment the Company will provide a statement listing each Qualifying Affiliate approved in the Incentive Month, the number of Qualifying Users counted, the resulting incentive, and any adjustment made under paragraph 5.2.'),
+  P('6.3  The Intern may query a statement in writing within fourteen (14) days of receiving it. The Parties will resolve any query in good faith and the Company will correct any error in the next payment. A statement not queried within that period is treated as agreed.'),
+  P('6.4  The Company will retain the records supporting each statement for twelve (12) months.'),
+  H('7.  MONTHLY EXPECTATION'),
+  P('7.1  The Intern is expected to introduce at least {{affTarget}} Qualifying Affiliates in each full Incentive Month.'),
+  P('7.2  This is a performance expectation used for review and feedback. It is not a condition of the base stipend, no deduction is made for falling short of it, and exceeding it earns no payment beyond the per-affiliate and per-user amounts in paragraphs 3 and 4.'),
+  P('7.3  Where the expectation is not met, the Parties will discuss the reasons at the next review and agree what support or change of approach is needed. A sustained shortfall may be treated by the Company as a reason to end this Agreement under clause 12.1.'),
+  H('8.  TIMING AND END OF TERM'),
+  P('8.1  Incentive begins to accrue on {{incStart}}.'),
+  P('8.2  Incentive earned in an Incentive Month is paid together with the base stipend, on or about the {{payDay}} of the following calendar month.'),
+  P('8.3  Incentive earned up to and including the last day of the Term is paid in the ordinary cycle following that date, even though the payment date falls after the Term has ended.'),
+  P('8.4  No incentive is earned in respect of an Affiliate approved, or a Qualifying User generated, after the end of the Term.', {absent:'tailDays'}),
+  P('8.4  No incentive is earned in respect of an Affiliate approved after the end of the Term. Qualifying Users generated within {{tailDays}} days after the end of the Term, through Affiliates who became Qualifying Affiliates during the Term, are counted and paid in the final statement.', {needs:'tailDays'}),
+  H('9.  CAP AND CHANGES TO THE RATES'),
+  P('9.1  The monthly incentive cap is: {{incCap}}.'),
+  P('9.2  The Company may change the amounts in paragraphs 3.1 and 4.1 for future Incentive Months by giving the Intern at least {{incNoticeDays}} days’ written notice. A change takes effect from the start of the next full Incentive Month after the notice period ends, and does not affect any incentive already earned. If the Intern does not accept the change, the Intern may end this Agreement under clause 12.1.',{needs:'incNoticeDays'}),
+  H('10.  SUMMARY OF RATES'),
+  KV('Base stipend:','{{currency}} {{fee}} per {{feePer}}'),
+  KV('Per Qualifying Affiliate:','{{currency}} {{incAffiliate}} — once per affiliate, kept even if they later stop promoting'),
+  KV('Per Qualifying User:','{{currency}} {{incUser}} — once per user, non-recurring'),
+  KV('A user counts when they:','{{userTrigger}}'),
+  KV('Monthly expectation:','{{affTarget}} Qualifying Affiliates'),
+  KV('Minimum followers to approve:','{{minFollowers}}',{needs:'minFollowers'}),
+  KV('Incentive accrues from:','{{incStart}}'),
+  KV('Paid:','With the base stipend, on or about the {{payDay}} of the following month'),
+  KV('Monthly cap:','{{incCap}}'),
+  {t:'sig',a:'FOR {{coName}}',b:'THE INTERN',
+   al:['Signature','Date'], ai:['{{coSignName}}, {{coSignTitle}}'],
+   bl:['Signature','Date'], bi:['{{pName}}']},
+].map(b=>({...b, pay:'incentive'}));
+
 const INTERNSHIP = [
   {t:'lh'},
   {t:'title',x:'INTERNSHIP AGREEMENT',sub:'Remote · International'},
@@ -308,7 +414,8 @@ const INTERNSHIP = [
   P('1.1  The Company operates a remote-first business. The Intern wishes to gain practical experience and structured mentorship in the field described in Schedule A, and the Company is willing to provide that experience on the terms set out below.'),
   P('1.2  This Agreement creates an internship for educational and developmental purposes only. It does not create an employment relationship, a partnership, a joint venture, an agency, or an independent contractor relationship between the Parties.'),
   P('1.3  The Intern is not an employee of the Company. The Intern is not entitled to any wage, salary, overtime, bonus, commission, equity, pension, insurance, paid leave, severance, or any other benefit that the Company provides or may provide to its employees or contractors.'),
-  P('1.4  The Intern acknowledges that the primary beneficiary of this internship is the Intern, and that the training, mentorship, feedback and portfolio work provided under Schedule A form part of the consideration the Intern receives.', {ifnot:'paid'}),
+  P('1.4  The Intern acknowledges that the primary beneficiary of this internship is the Intern, and that the training, mentorship, feedback and portfolio work provided under Schedule A form part of the consideration the Intern receives.', {pay:'unpaid'}),
+  P('1.4  The Company will provide the training, mentorship and feedback set out in Schedule A. The stipend and any incentive payable under clause 5 are paid in recognition of the Intern’s participation in the internship. They do not convert this Agreement into a contract of employment, and they do not entitle the Intern to any employee benefit.', {pay:'paid'}),
   P('1.5  Nothing in this Agreement obliges the Company to offer, or the Intern to accept, paid employment or a paid engagement at the end of the Term.'),
   H('2.  TERM'),
   P('2.1  This internship begins on {{startDate}} and ends on {{endDate}} (the **"Term"**), unless ended earlier under clause 12.'),
@@ -321,21 +428,33 @@ const INTERNSHIP = [
   P('2.8  Clauses 6, 7, 8 and 10 apply from the Effective Date and continue to apply if this Agreement is ended during the initial review period. For the avoidance of doubt, the Company owns all Work Product created during the initial review period, whether or not the internship continues beyond it.',{needs:'probationDays'}),
   H('3.  LEARNING PROGRAMME AND ACTIVITIES'),
   P('3.1  The learning objectives, activities, mentorship arrangements and review points for this internship are set out in Schedule A, which forms part of this Agreement.'),
-  P('3.2  The Intern’s activities are intended to complement, and not to displace, work that the Company would otherwise pay an employee or contractor to perform.'),
+  P('3.2  The Intern’s activities are intended to complement, and not to displace, work that the Company would otherwise pay an employee or contractor to perform.', {pay:'unpaid'}),
+  P('3.2  The Intern carries out the activities in Schedule A under the supervision described in this clause 3. The Company approves material published on its behalf before publication, save that the supervisor may give standing written approval for a defined category of routine posting.', {pay:'paid'}),
   P('3.3  The Company has assigned {{supName}}, {{supTitle}}, as the Intern’s supervisor. The supervisor will provide regular guidance and written feedback at the review points listed in Schedule A.'),
   H('4.  TIME COMMITMENT AND FLEXIBILITY'),
-  P('4.1  The expected commitment is approximately {{hours}} hours per week. The Intern is not required to work fixed shifts and may choose when within each week to carry out internship activities, subject to attending scheduled calls agreed in advance.'),
+  P('4.1  The expected commitment is approximately {{hours}} hours per week. The Intern is not required to work fixed shifts and may choose when within each week to carry out internship activities, subject to attending scheduled calls agreed in advance.', {when:s=>s.paid!=='Incentive'}),
+  P('4.1  The Intern’s commitment is not expected to exceed {{hours}} hours per week. The Intern is not required to work fixed shifts and may choose when within each week to carry out internship activities, subject to attending scheduled calls agreed in advance. The Company will not require the Intern to exceed that commitment, and nothing in the incentive arrangements in Schedule B obliges the Intern to do so.', {pay:'incentive'}),
   P('4.2  The internship is performed entirely remotely. The Intern is responsible for their own workspace, internet connection and personal equipment unless the Company expressly provides otherwise in writing.'),
   P('4.3  The Company will accommodate the Intern’s study, examination and academic commitments where the Intern gives reasonable advance notice.'),
-  H('5.  NO COMPENSATION', {ifnot:'paid'}),
-  P('5.1  This internship is unpaid. The Intern will not receive, and expressly waives any claim to, any wage, stipend, salary or other monetary compensation for the activities carried out under this Agreement.', {ifnot:'paid'}),
-  P('5.2  The Company may, at its sole discretion and without creating any obligation or precedent, reimburse specific out-of-pocket expenses that it has approved in writing in advance. Reimbursement of an expense does not convert this internship into a paid engagement.', {ifnot:'paid'}),
-  P('5.3  If the Parties later agree that the Intern will be paid, they will sign a separate written agreement recording the new arrangement. Payment will not begin until that agreement is signed.', {ifnot:'paid'}),
-  H('5.  STIPEND', {if:'paid'}),
-  P('5.1  The Company will pay the Intern a stipend of USD {{fee}} per {{feePer}} for the duration of the Term.', {if:'paid'}),
-  P('5.2  The stipend is payable {{invoiceFreq}}, within {{netDays}} days, by {{payMethod}}. The Company bears its own sending fees. The Intern bears any receiving fee, intermediary bank fee, and any cost of converting to local currency.', {if:'paid'}),
-  P('5.3  The stipend is gross. The Intern is solely responsible for any tax or contribution arising in their country of residence. The Company makes no withholding or deduction.', {if:'paid'}),
-  P('5.4  The Company may, at its discretion, reimburse out-of-pocket expenses it has approved in writing in advance.', {if:'paid'}),
+  H('5.  NO COMPENSATION', {pay:'unpaid'}),
+  P('5.1  This internship is unpaid. The Intern will not receive, and expressly waives any claim to, any wage, stipend, salary or other monetary compensation for the activities carried out under this Agreement.', {pay:'unpaid'}),
+  P('5.2  The Company may, at its sole discretion and without creating any obligation or precedent, reimburse specific out-of-pocket expenses that it has approved in writing in advance. Reimbursement of an expense does not convert this internship into a paid engagement.', {pay:'unpaid'}),
+  P('5.3  If the Parties later agree that the Intern will be paid, they will sign a separate written agreement recording the new arrangement. Payment will not begin until that agreement is signed.', {pay:'unpaid'}),
+  H('5.  STIPEND', {pay:'stipend'}),
+  P('5.1  The Company will pay the Intern a stipend of {{currency}} {{fee}} per {{feePer}} for the duration of the Term.', {pay:'stipend'}),
+  P('5.2  The stipend is payable {{invoiceFreq}}, within {{netDays}} days, by {{payMethod}}. The Company bears its own sending fees. The Intern bears any receiving fee, intermediary bank fee, and any cost of converting to local currency.', {pay:'stipend'}),
+  P('5.3  The stipend is gross. The Intern is solely responsible for any tax or contribution arising in their country of residence. The Company makes no withholding or deduction.', {pay:'stipend'}),
+  P('5.4  The Company may, at its discretion, reimburse out-of-pocket expenses it has approved in writing in advance.', {pay:'stipend'}),
+  H('5.  BASE STIPEND AND PERFORMANCE INCENTIVE', {pay:'incentive'}),
+  P('5.1  The Company will pay the Intern a base stipend of {{currency}} {{fee}} per {{feePer}}, together with any performance incentive earned under Schedule B. Schedule B forms part of this Agreement.', {pay:'incentive'}),
+  P('5.2  The initial review period under clause 2.4 is an orientation and training period, during which the Intern is not asked to carry out revenue-generating work. No base stipend and no incentive accrue in respect of that period. The base stipend begins to accrue on {{termStart}}.', {pay:'incentive', needs:'probationDays', when:unpaidProb}),
+  P('5.2  The base stipend accrues from the Start Date, including during any initial review period, and is pro-rated for any part of a calendar month.', {pay:'incentive', when:s=>!unpaidProb(s)}),
+  P('5.3  The performance incentive is earned in accordance with Schedule B and begins to accrue on {{incStart}}. No incentive accrues before that date.', {pay:'incentive'}),
+  P('5.4  The base stipend and any incentive earned in a calendar month are paid together, as a single payment, on or about the {{payDay}} of the following calendar month, and in any event no later than {{netDays}} days after the end of that month. Each payment is accompanied by the statement described in paragraph 6 of Schedule B.', {pay:'incentive'}),
+  P('5.5  Payment is made in {{currency}} by {{payMethod}}. The Company bears its own sending fees. The Intern bears any receiving fee, intermediary bank fee, and any cost of converting to local currency.', {pay:'incentive'}),
+  P('5.6  The base stipend and the incentive are gross. The Intern is solely responsible for any tax, contribution or registration arising in their country of residence. The Company makes no withholding or deduction and files no return on the Intern’s behalf.', {pay:'incentive'}),
+  P('5.7  The incentive is determined by the formula in Schedule B and is not discretionary: where the conditions in Schedule B are met, the incentive is payable. The Company may, in addition and at its discretion, reimburse out-of-pocket expenses it has approved in writing in advance.', {pay:'incentive'}),
+  P('5.8  The monthly expectation in paragraph 7 of Schedule B is a performance expectation, not a condition of the base stipend. Falling short of it in any month does not reduce the base stipend and does not of itself end this Agreement. The Parties will discuss the reasons at the next review, and a sustained shortfall may be treated by the Company as a reason to end this Agreement under clause 12.1.', {pay:'incentive'}),
   H('6.  CONFIDENTIALITY'),
   P('6.1  **"Confidential Information"** means any non-public information of or relating to the Company, in any form, including product plans, source code, designs, unpublished brand assets, research, customer and user data, analytics, pricing, financials, strategy, credentials, and any information the Intern would reasonably understand to be confidential.'),
   P('6.2  The Intern will keep all Confidential Information strictly confidential, will use it only for the purposes of this internship, and will not disclose it to any third party, publish it, or post it on any social media or public channel without the Company’s prior written consent.'),
@@ -359,6 +478,7 @@ const INTERNSHIP = [
   P('9.1  The Intern will act honestly and professionally, will comply with the Company’s written policies and brand guidelines as notified from time to time, and will comply with the terms of service and advertising rules of every platform on which the Intern acts for the Company.'),
   P('9.2  The Intern will not publish anything on behalf of the Company that is false, misleading, defamatory, discriminatory, harassing, infringing of any third-party right, or in breach of any applicable advertising or disclosure rule.'),
   P('9.3  The Intern will not use any third-party image, music, font, video or other content on behalf of the Company without confirming the Company holds a valid licence for that use.'),
+  P('9.4  Before any affiliate the Intern introduces publishes content promoting the Company, the Intern will tell that affiliate in writing that every such post must clearly and conspicuously disclose the commercial relationship, in the manner the Company specifies and in accordance with the advertising and disclosure rules applicable to that affiliate.', {pay:'incentive'}),
   H('10.  DATA PROTECTION'),
   P('10.1  The Company processes the Intern’s personal data for the purposes of administering this internship, and will do so in accordance with applicable data protection law, including the Nigeria Data Protection Act 2023 where the Intern is resident in Nigeria.'),
   P('10.2  Where the Intern handles personal data belonging to the Company’s users, customers or audience, the Intern will do so only on the Company’s documented instructions, will apply the security measures the Company specifies, will not transfer that data to any third party or personal device, and will notify the Company without undue delay, and in any event within twenty-four (24) hours, of becoming aware of any actual or suspected personal data breach.'),
@@ -371,6 +491,7 @@ const INTERNSHIP = [
   P('12.1  Either Party may end this Agreement at any time, for any reason or no reason, by giving {{noticeDays}} days’ written notice to the other.',{absent:'probationDays'}),
   P('12.2  The Company may end this Agreement immediately on written notice if the Intern breaches clause 6, 7, 8 or 9, becomes unreachable for more than ten (10) consecutive days without notice, or acts in a way that in the Company’s reasonable opinion damages or is likely to damage the Company’s reputation.'),
   P('12.3  On termination, clauses 6, 7, 8.1, 8.4, 10, 13, 14 and 15 survive.'),
+  P('12.4  On termination for any reason, the Company will pay the Intern all base stipend and all incentive earned up to and including the date of termination, in the ordinary monthly cycle following that date. Paragraphs 5, 6 and 8 of Schedule B survive termination and govern any amount falling to be calculated, adjusted or paid after it.', {pay:'incentive'}),
   H('13.  CERTIFICATE OF COMPLETION'),
   P('13.1  Where the Intern completes the full Term and the Company is reasonably satisfied with the Intern’s conduct and participation, the Company will issue a written Certificate of Internship Completion recording the Intern’s name, role, the start and end dates, and a factual summary of the activities undertaken.'),
   P('13.2  A certificate issued under clause 13.1 is a factual record only. It is not a reference, a guarantee of future employment, a representation of employment status, or a statement that any wage was paid. The Company is under no obligation to issue any additional letter, reference or statement, and will not issue any document it believes to be inaccurate.'),
@@ -403,6 +524,7 @@ const INTERNSHIP = [
   KV('Weekly commitment:','{{hours}} hours'),
   KV('Dates:','{{startDate}} to {{endDate}}'),
   KV('Initial review period:','First {{probationDays}} days, ending {{probationEnd}} (clause 2.4)',{needs:'probationDays'}),
+  KV('Main term begins:','{{termStart}}',{needs:'probationDays'}),
   H('LEARNING OBJECTIVES'),
   P('By the end of the Term the Intern will be able to:'),
   {t:'rep',src:'objectives',num:true},
@@ -417,6 +539,7 @@ const INTERNSHIP = [
   {t:'sig',a:'FOR {{coName}}',b:'THE INTERN',
    al:['Signature','Date'], ai:['{{coSignName}}, {{coSignTitle}}'],
    bl:['Signature','Date'], bi:['{{pName}}']},
+  ...SCHEDULE_B,
 ];
 
 const CONTRACTOR = [
@@ -439,10 +562,10 @@ const CONTRACTOR = [
   P('2.6  The Contractor has no authority to bind the Company, enter into any contract on its behalf, or hold themselves out as an employee, officer or agent of the Company.'),
   P('2.7  The Contractor may engage a subcontractor to assist with the Services only with the Company’s prior written consent. The Contractor remains fully responsible for the acts and omissions of any subcontractor and must put in place with them confidentiality and intellectual property terms at least as protective as clauses 6 and 7.'),
   H('3.  FEES, INVOICING AND PAYMENT'),
-  P('3.1  The Company will pay the Contractor USD {{fee}} per {{feePer}}, as set out in Schedule A.'),
+  P('3.1  The Company will pay the Contractor {{currency}} {{fee}} per {{feePer}}, as set out in Schedule A.'),
   P('3.2  The Contractor will issue an invoice {{invoiceFreq}}. Each invoice must state the invoice number, invoice date, the period or Deliverables covered, the amount due, and the Contractor’s payment details.'),
   P('3.3  The Company will pay each correctly submitted and undisputed invoice within {{netDays}} days of receipt.'),
-  P('3.4  Payment will be made in United States Dollars by {{payMethod}}. The Company bears its own sending fees. The Contractor bears any receiving fee, intermediary bank fee, and any cost of converting to local currency.'),
+  P('3.4  Payment will be made in {{currency}} by {{payMethod}}. The Company bears its own sending fees. The Contractor bears any receiving fee, intermediary bank fee, and any cost of converting to local currency.'),
   P('3.5  The Company may withhold payment for any Deliverable that materially fails to meet the acceptance criteria in Schedule A, provided it notifies the Contractor in writing within seven (7) days of delivery, specifies what is deficient, and gives the Contractor a reasonable opportunity to correct it.'),
   P('3.6  The Contractor will be reimbursed only for expenses the Company has approved in writing in advance, on production of receipts.'),
   H('4.  TAXES AND DOCUMENTATION'),
@@ -514,7 +637,7 @@ const CONTRACTOR = [
   H('3.  ACCEPTANCE CRITERIA'),
   P('{{acceptance}}'),
   H('4.  FEES'),
-  KV('Rate:','USD {{fee}} per {{feePer}}'),
+  KV('Rate:','{{currency}} {{fee}} per {{feePer}}'),
   KV('Invoicing:','{{invoiceFreq}}'),
   KV('Payment terms:','Net {{netDays}}'),
   KV('Payment method:','{{payMethod}}'),
@@ -551,9 +674,11 @@ const OFFER = [
   H('WHAT YOU WILL BE DOING'),
   P('{{whatDoing}}'),
   H('COMPENSATION'),
-  KV('Fee:','USD {{fee}} per {{feePer}}'),
-  KV('Invoicing:','You invoice us {{invoiceFreq}}'),
-  KV('Payment terms:','Net {{netDays}} from receipt of a correct invoice'),
+  KV('Base:','{{currency}} {{fee}} per {{feePer}}'),
+  KV('Incentive:','{{currency}} {{incAffiliate}} for every affiliate you bring in and we approve, and {{currency}} {{incUser}} for every new user they generate, paid once per user and not recurring. The full rules are in Schedule B of the agreement.',{needs:'incAffiliate'}),
+  KV('When you are paid:','Base and incentive together, on or about the {{payDay}} of the following month.',{needs:'incAffiliate'}),
+  KV('Invoicing:','You invoice us {{invoiceFreq}}',{absent:'incAffiliate'}),
+  KV('Payment terms:','Net {{netDays}} from receipt of a correct invoice',{absent:'incAffiliate'}),
   KV('Payment method:','{{payMethod}}. We cover our sending fee; you cover receiving and conversion costs.'),
   P('This is a gross fee. You are responsible for your own taxes and any registration required where you live. We do not withhold or deduct anything.'),
   H('BEFORE YOU START'),
@@ -606,7 +731,8 @@ const DOCS = {
 
 const LABELS = {};
 GROUPS.forEach(g=>g.fields.forEach(f=>LABELS[f.k]=f.l));
-Object.assign(LABELS,{effDate:'Agreement date',endDate:'End date',startDate:'Start date'});
+Object.assign(LABELS,{effDate:'Agreement date',endDate:'End date',startDate:'Start date',
+  probationEnd:'Review period end',termStart:'Main term start'});
 
 /* ═══════════════════════ STATE ═══════════════════════ */
 const LS='veyns_filler_v1';
@@ -640,7 +766,7 @@ function visibleGroups(){
   });
 }
 function visibleFields(g){
-  return g.fields.filter(f=> !f.docs || f.docs.includes(doc));
+  return g.fields.filter(f=> (!f.docs || f.docs.includes(doc)) && (!f.showIf || f.showIf(S,doc)));
 }
 
 function buildForm(){
@@ -702,18 +828,20 @@ function fmtDate(v){
   if(!m) return v;
   return `${+m[3]} ${MONTHS[+m[2]-1]} ${m[1]}`;
 }
-const DATE_KEYS=new Set(['effDate','startDate','endDate','midReview','finalReview','offerDeadline','issueDate']);
+const DATE_KEYS=new Set(['effDate','startDate','endDate','midReview','finalReview','offerDeadline','issueDate','incStart']);
 
 let missingCount=0;
 
 // Values derived from other fields rather than typed directly.
 function computed(k){
-  if(k!=='probationEnd') return undefined;
+  if(k!=='probationEnd' && k!=='termStart') return undefined;
   const start=S.startDate, days=parseInt(S.probationDays,10);
   if(!start || !days || isNaN(days) || days<1) return null;
   const dt=new Date(start+'T00:00:00');
   if(isNaN(dt.getTime())) return null;
-  dt.setDate(dt.getDate()+days-1);   // day 1 is the start date itself
+  // Day 1 is the start date itself, so the review period ends on start+days-1
+  // and the main term begins the day after that.
+  dt.setDate(dt.getDate()+days-(k==='probationEnd'?1:0));
   const pad=n=>String(n).padStart(2,'0');
   return fmtDate(`${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`);
 }
@@ -740,12 +868,19 @@ function fill(str,opt){
   }).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
 }
 
+// Which compensation models a block belongs to. 'paid' means any model but unpaid.
+const PAY={
+  unpaid:    v=>v==='Unpaid',
+  paid:      v=>v!=='Unpaid',
+  stipend:   v=>v==='Stipend',
+  incentive: v=>v==='Incentive',
+};
 function isSet(k){ const v=String(S[k]==null?'':S[k]).trim(); return v!=='' && v!=='0'; }
 function show(b){
-  if(b.if && S[b.if]!=='Paid') return false;
-  if(b.ifnot && S[b.ifnot]==='Paid') return false;
+  if(b.pay && !PAY[b.pay](S.paid)) return false;
   if(b.needs && !isSet(b.needs)) return false;   // hide unless the field has a real value
   if(b.absent && isSet(b.absent)) return false;  // hide once the field has a real value
+  if(b.when && !b.when(S)) return false;         // anything the flags above cannot express
   return true;
 }
 
@@ -884,8 +1019,58 @@ document.getElementById('clearBtn').addEventListener('click',()=>{
   render();
 });
 
-document.getElementById('loadEx').addEventListener('click',()=>{
-  Object.assign(S,{
+/* The influencer preset deliberately leaves the person's identity, the company
+   address and the signer blank, so a real agreement cannot go out with demo
+   details baked into it. Everything that is a negotiated term is filled in. */
+const PRESETS={};
+
+PRESETS.influencer={
+  role:'Influencer Marketing Intern',
+  paid:'Incentive',
+  pCountry:'India',
+  effDate:'2026-09-08', startDate:'2026-09-14', endDate:'2027-03-31',
+  probationDays:'17', hours:'20',
+  currency:'USD', fee:'60', feePer:'month',
+  invoiceFreq:'monthly in arrears', netDays:'7', payMethod:'Wise',
+  probPay:'Unpaid',
+  noticeDays:'fourteen (14)',
+  incAffiliate:'10', incUser:'3',
+  minFollowers:'', affTarget:'five (5)', approvalDays:'five (5)',
+  userTrigger:'complete their first paid purchase',
+  incStart:'2026-10-01', payDay:'first working day',
+  incCap:'No cap', tailDays:'0', incNoticeDays:'thirty (30)',
+  midReview:'2026-12-31', finalReview:'2027-03-25',
+  objectives:[
+    'Run an influencer outreach pipeline end to end: sourcing, first contact, qualification, onboarding and follow-up.',
+    'Judge whether a creator is worth partnering with by reading audience quality, engagement rate and fit, rather than follower count alone.',
+    'Write outreach messages and creator briefs that get a reply and produce usable content.',
+    'Run a brand Instagram account so that it reads as an active, credible business to a first-time visitor.',
+    'Read Instagram and affiliate dashboard analytics and explain what a change in reach, saves, profile visits or sign-ups actually means.',
+  ],
+  training:[
+    'Weekly one-to-one call with the supervisor, 30 minutes, at a time agreed each week.',
+    'Written feedback on outreach messages, creator briefs and drafted content within two working days.',
+    'Access to the Veyns brand guidelines, content templates, outreach scripts and the affiliate dashboard.',
+    'A walkthrough of the affiliate tracking system and how attribution is recorded, before any incentive begins to accrue.',
+  ],
+  activities:[
+    'Running the Veyns Instagram account day to day: planning, drafting and scheduling posts, stories and reels for review before publication.',
+    'Replying to comments and direct messages so the account reads as active and responsive to prospective customers and affiliates.',
+    'Identifying and approaching prospective affiliates on Instagram and submitting them to the supervisor for approval.',
+    'Onboarding approved affiliates: sharing the brief, the tracked link or code, and the disclosure requirements.',
+    'Compiling a monthly summary of outreach, approved affiliates and account performance.',
+  ],
+  engKind:'Paid intern', term:'Fixed term', offerDeadline:'2026-09-12',
+  whatDoing:'You will own the Veyns Instagram account day to day and build our affiliate creator programme. That means planning and drafting content, keeping the account active and responsive so it reads as a real brand to anyone who lands on it, finding creators worth partnering with, and onboarding the ones we approve. You will not publish unsupervised; everything is reviewed before it goes out.',
+  basis:'part-time, up to 20 hours per week', certKind:'internship',
+  responsibilities:[
+    'Managing the Veyns Instagram account, including content planning, copywriting and community management.',
+    'Building and running the affiliate creator programme: sourcing, qualifying, onboarding and supporting creators.',
+    'Reporting monthly on outreach, affiliate activity and account performance.',
+  ],
+};
+
+PRESETS.basic={
     coName:'Veyns LLC', coAddress:'1234 Example Street, Suite 100, Louisville, KY 40202',
     coSignName:'Krishna Aggarwal', coSignTitle:'Member',
     coEmail:'krishna@veyns.com', coVerifyEmail:'verify@veyns.com',
@@ -896,7 +1081,7 @@ document.getElementById('loadEx').addEventListener('click',()=>{
     effDate:'2026-09-05', startDate:'2026-09-08', endDate:'2026-12-08', hours:'12', probationDays:'14',
     supName:'Krishna Aggarwal', supTitle:'Founder', supEmail:'krishna@veyns.com',
     noticeDays:'seven (7)', nonSolicit:'six (6)',
-    fee:'220', feePer:'month', invoiceFreq:'monthly in arrears', netDays:'14', payMethod:'Wise',
+    currency:'USD', fee:'220', feePer:'month', invoiceFreq:'monthly in arrears', netDays:'14', payMethod:'Wise',
     midReview:'2026-10-20', finalReview:'2026-12-05',
     objectives:[
       'Plan a monthly content calendar across three platforms from a brand brief.',
@@ -930,8 +1115,16 @@ document.getElementById('loadEx').addEventListener('click',()=>{
       'Producing a monthly performance report covering reach, engagement rate and follower growth.',
     ],
     perf:'Throughout the internship she was reliable, communicated clearly across time zones, and consistently met agreed deadlines.',
-  });
+};
+
+const exSel=document.getElementById('loadEx');
+exSel.addEventListener('change',()=>{
+  const p=PRESETS[exSel.value];
+  exSel.value='';
+  if(!p) return;
+  Object.assign(S,structuredClone(p));   // repeatables are arrays; never share them with the preset
   render();
+  document.querySelector('.paper-pane').scrollTop=0;
 });
 
 const mt=document.getElementById('mobtog');
